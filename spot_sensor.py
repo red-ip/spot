@@ -49,7 +49,8 @@ from core.daemon import startstop
 
 from core.udpserver import updserverstart
 
-version = "1.3.6"
+version = "1.3.7"
+core.LOG_FILE_NAME = "spot_sensor"
 print ("------------------- spot_sensore %s -------------------") % version
 
 
@@ -149,7 +150,7 @@ def main():
             if str(e) == 'KeyboardInterrupt':
                 if core.PROG_DAEMONIZE:
                     log(str(e) + " !! STOPPING !!", "info")
-                    startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
+                    startstop(pidfile=core.PDI_FILE_SENSOR, startmsg='stopping daemon', action='stop')
                 else:
                     print("KeyboardInterrupt received, stopping work ")
                 sock.close()
@@ -215,7 +216,7 @@ def main():
         except (KeyboardInterrupt, socket.error, 'Bad file descriptor', UnboundLocalError) as e:
             if str(e) == 'KeyboardInterrupt':
                 if core.PROG_DAEMONIZE:
-                    startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
+                    startstop(pidfile=core.PDI_FILE_SENSOR, startmsg='stopping daemon', action='stop')
                 else:
                     print("KeyboardInterrupt received, stopping work ")
                 sock.close()
@@ -264,30 +265,30 @@ if __name__ == "__main__":
     if options.pidfile:
         print "------------------- Set PIDfile to " + options.pidfile + " -------------------"
         log("Set PIDfile to " + options.pidfile, "info")
-        core.PDI_FILE = str(options.pidfile)
+        core.PDI_FILE_SENSOR = str(options.pidfile)
 
     # Set LOG
     if options.log:
         print "------------------- Log DEBUG manual set to True -------------------"
         core.DEBUG_LOG = True
-        log("DEBUG LOG manual set to True ", "debug")
+        log("DEBUG LOG manual set to True", "debug")
     else:
         core.DEBUG_LOG = None
 
     if options.stop:
         log("Got the option to stop the Daemon ", "debug")
-        startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
+        startstop(pidfile=core.PDI_FILE_SENSOR, startmsg='stopping daemon', action='stop')
     elif options.restart:
         log("Got the option to restart the Daemon ", "debug")
-        startstop(pidfile=core.PDI_FILE, startmsg='restarting daemon', action='restart')
+        startstop(pidfile=core.PDI_FILE_SENSOR, startmsg='restarting daemon', action='restart')
     elif options.status:
         log("Got the option to return the Daemon status", "debug")
         startstop(stdout='.', stderr=None, stdin='.',
-                  pidfile=core.PDI_FILE, startmsg='status of daemon', action='status')
+                  pidfile=core.PDI_FILE_SENSOR, startmsg='status of daemon', action='status')
     elif options.daemonize:
         print "------------------- Preparing to run in daemon mode -------------------"
         log("Preparing to run in daemon mode", "info")
-        startstop(pidfile=core.PDI_FILE, action='start')
+        startstop(pidfile=core.PDI_FILE_SENSOR, action='start')
     else:
         print("Starte als Terminal")
 
