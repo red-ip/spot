@@ -6,8 +6,9 @@ from SocketServer import UDPServer, BaseRequestHandler
 from core.Logger import log
 from core.Helper import get_local_ip
 
-PORT = 55555
+version = "1.0.0"
 
+PORT = 55555
 
 class MasterUDPServer(threading.Thread):
     def run(self):
@@ -35,8 +36,8 @@ class Handler(BaseRequestHandler):
 
 
 def updserverstart():
-    udpserver = MasterUDPServer()
-    udpserver.start()
+    udp_server = MasterUDPServer()
+    udp_server.start()
 
 
 if __name__ == "__main__":

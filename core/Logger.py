@@ -3,6 +3,7 @@ import core
 import random
 # log("Background scan for xxx information was startet", 'info')
 # info_level : info, error, debug
+version = "1.0.0"
 
 
 def log(message, info_level):
