@@ -6,8 +6,6 @@ The Protocol:
     (Start)
     Expecting first a function that should be processed
 
-
-
     (End)
     After the function is done, the application go back to waiting for command mode
 """
@@ -129,16 +127,24 @@ def discovery_devices(wait_till_found=True):
 def discovery_sensors(wait_till_found=True):
     # get look up for the sensors
     # sensors are storage at core.SPOT_SENSOR
-    while get_local_ip("8.8.8.8") is None:      # check if we have a ip
-        time.sleep(1)
-
-    if wait_till_found:
-        updclientstart()
-        while len(core.SPOT_SENSOR) == 0:
-            updclientstart()
+    try:
+        while get_local_ip("8.8.8.8") is None:      # check if we have a ip
             time.sleep(1)
-    else:
-        updclientstart()
+
+        if wait_till_found:
+            updclientstart()
+            while len(core.SPOT_SENSOR) == 0:
+                updclientstart()
+                time.sleep(1)
+        else:
+            updclientstart()
+    except KeyboardInterrupt:
+        log("Got signal to STOP", "info")
+        if core.PROG_DAEMONIZE:
+            startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
+        else:
+            print("KeyboardInterrupt received, stopping work ")
+        os._exit(0)
 
 
 def main():
@@ -156,7 +162,7 @@ def main():
     # we will work with devices_to_check all the time and save the response from the sensors here
     devices_to_check = discovery_devices()
 
-    log("All parameters collected. System OK", "info")
+    log("All parameters collected. System OK -> STARTING WORK", "info")
 
     try:
         request_discovery = False               # sometimes I'll rediscover sensors and the "device to check list"
