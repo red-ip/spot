@@ -79,9 +79,10 @@ def check_device_dict_via_sensor(sensor_ip, sensor_port, device_dict):
     timeout_calc = len(device_dict) * 6                                # for each device we add 5 Sec
     sock.settimeout(timeout_calc)
     sensor_address = (sensor_ip, int(sensor_port))
-    sock.connect(sensor_address)
-    device_dict_processed = {}
+
     try:
+        device_dict_processed = {}
+        sock.connect(sensor_address)
         sensor_command = "checkdevice"
         sock.sendall(sensor_command)
         sensor_response = sock.recv(5)

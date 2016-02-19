@@ -3,15 +3,21 @@
 # -*- coding: <utf-8> -*-
 
 from core.Logger import log
-import bluetooth
 import time
+
+try:
+    import bluetooth
+except (ImportError, NameError) as e:
+    log("bluetooth python Module is not installed", "error")
+
 
 def checkdevice(mac):
     try:
         result2 = bluetooth.lookup_name(mac, timeout=5)
-    except bluetooth.btcommon.BluetoothError:
+    except (bluetooth.btcommon.BluetoothError, NameError) as e:
+        log("bluetooth python Module is not installed - returning device is not present", "debug")
         result2 = "None"
-        time.sleep(5)
+        time.sleep(3)
 
     if str(result2) != "None":
         log("bluetooth lookup for MAC : " + str(result2) + " : True ", "debug")

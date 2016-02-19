@@ -9,11 +9,17 @@ version = "1.0.0"
 def get_device_to_check():
     try:
         response = urllib2.urlopen('http://' + str(core.IP_CCU) + '/config/xmlapi/sysvarlist.cgi', timeout=2)
-    except urllib2.URLError, e:
+    except (urllib2.URLError) as e:
         log("Timeout in connection to ccu : " + str(core.IP_CCU), "error")
         print("There was an error: %r" % e)
         device_dict = None
         return device_dict
+    except:
+        log("Timeout in connection to ccu : " + str(core.IP_CCU), "error")
+        print("There was an error")
+        device_dict = None
+        return device_dict
+
 
     html = response.read()                                                  # Lode XML files into the variable
     device_dict = {}                                                        #

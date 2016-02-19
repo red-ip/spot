@@ -37,10 +37,14 @@ The Protocol:
     (End)
     After the function is done, the application go back to waiting for command mode
 """
+import core
+version = "1.3.7"
+core.LOG_FILE_NAME = "spot_sensor"
+
 import os
 import time
 import socket
-import core
+
 from optparse import OptionParser
 from core.Logger import log
 from core.Helper import get_local_ip, is_mac
@@ -49,8 +53,7 @@ from core.daemon import startstop
 
 from core.udpserver import updserverstart
 
-version = "1.3.7"
-core.LOG_FILE_NAME = "spot_sensor"
+
 print ("------------------- spot_sensore %s -------------------") % version
 
 
@@ -70,12 +73,14 @@ def sayhello(v):        # noch in der Entwiklung
 
 
 def getsock():
+    timeout = 10
     # Create a TCP/IP socket
     while (get_local_ip('8.8.8.8') == None):
         time.sleep(1)
     myip = get_local_ip('8.8.8.8')
     log("GetSock got the IP : " + str(myip), "debug")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(timeout)
     log("Bind the socket to the IP:Port : " + str(myip) + ":" + str(core.SRV_PORT), "info")
     server_address = ('', core.SRV_PORT)
     try:
@@ -145,7 +150,9 @@ def main():
         time.sleep(1)
         try:
             log("Waiting for connection", "debug")
+            sock.settimeout(600)
             connection, client_address = sock.accept()
+            sock.settimeout(60)
         except (KeyboardInterrupt, socket.error, 'Bad file descriptor') as e:
             if str(e) == 'KeyboardInterrupt':
                 if core.PROG_DAEMONIZE:
@@ -194,6 +201,7 @@ def main():
                         # check if the mac can be seen and sent the result back to the client
                         log("Transmitting the results back to the client", "debug")
                         writeline_dict(connection, check_device_dict(parameters))
+                        log("Transition done", "debug")
 
                     else:
                         # we didn't find any mac address
