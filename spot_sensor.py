@@ -298,6 +298,6 @@ if __name__ == "__main__":
         log("Preparing to run in daemon mode", "info")
         startstop(pidfile=core.PDI_FILE_SENSOR, action='start')
     else:
-        print("Starte als Terminal")
+        print("Starting in Terminal")
 
     main()
