@@ -25,7 +25,7 @@ from core.sensor_com import check_device_dict_via_sensor, check_sensor
 
 version = "1.2.1"
 core.LOG_FILE_NAME = "spot_check"
-print("------------------- spot_check %s -------------------") % version
+print("------------------- Spot %s -------------------") % version
 
 
 def writeline(mysock, mymsg):
@@ -266,9 +266,7 @@ def main():
 
 def start_local_sensor(scrip_parameters):
     import subprocess
-    scrip_name = 'spot_sensor2.py' # spot_sensor.py
-
-    scrip_parameters = '-i'
+    scrip_name = 'spot_sensor.py'
 
     if os.path.isfile(scrip_name):
         # Check if the Script is already running
@@ -281,11 +279,33 @@ def start_local_sensor(scrip_parameters):
             log("Script is already running, OK .", "debug")
         else:
             log("Starting : " + scrip_name, "debug")
-            os.system(('python ' + scrip_name + ' -s'))
+            os.system(('python ' + scrip_name + ' -s'))                     # just in case, old pid-file is present
+            time.sleep(1)                                                   # giving the os time
             os.system(('python ' + scrip_name + ' ' + scrip_parameters))
     else:
         log("Can not start the local Sensor coz can't find " + scrip_name + " ! System will try to discover an"
                                                                             " remote Sensor ", "error")
+
+
+def stop_local_sensor():
+    import subprocess
+    scrip_name = 'spot_sensor.py'
+
+    if os.path.isfile(scrip_name):
+        # Check if the Script is running
+        log("Script file is present, OK .", "debug")
+        cmd_command = 'ps aux | grep ' + scrip_name + ' | grep -v grep'
+
+        process = subprocess.Popen(cmd_command, shell=True, stdout=subprocess.PIPE)
+        output, err = process.communicate()
+        if len(output) > 0:
+            log("Sending shutdown command, OK .", "debug")
+            os.system(('python ' + scrip_name + ' -s'))
+        else:
+            log("Script is not running : " + scrip_name, "debug")
+    else:
+        log("Can not determine if script is running. Script-file not present : " + scrip_name, "error")
+
 
 if __name__ == "__main__":
     # Set up and gather command line arguments
@@ -296,8 +316,8 @@ if __name__ == "__main__":
                  dest='manually', help="Automatic Discovery Mode off - manually set up a sensor (ip:port)")
     p.add_option('-d', '--daemonize', action="store_true",
                  dest='daemonize', help="Run the server as a daemon")
-    p.add_option('-n', '--nosensor', action="store_true",
-                 dest='nosensor', help="do not start local sensore")
+    p.add_option('-n', '--no_local_sensor', action="store_true",
+                 dest='no_local_sensor', help="use -n to not start/stop a local Sensor")
     p.add_option('-p', '--pidfile',
                  dest='pidfile', default=None,
                  help="Store the process id in the given file")
@@ -352,19 +372,39 @@ if __name__ == "__main__":
 
     if options.stop:
         log("Got the option to stop the Daemon ", "debug")
+        if options.no_local_sensor is None:
+            stop_local_sensor()
         startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
+
     elif options.restart:
         log("Got the option to restart the Daemon ", "debug")
+        if options.no_local_sensor is None:
+            stop_local_sensor()
+            start_local_sensor("-d")
         startstop(pidfile=core.PDI_FILE, startmsg='restarting daemon', action='restart')
+
     elif options.status:
         log("Got the option to return the Daemon status", "debug")
+        if options.no_local_sensor is None:
+            start_local_sensor("-i")
         startstop(stdout='.', stderr=None, stdin='.',
                   pidfile=core.PDI_FILE, startmsg='status of daemon', action='status')
     elif options.daemonize:
         print "------------------- Preparing to run in daemon mode -------------------"
         log("Preparing to run in daemon mode", "info")
+        if options.no_local_sensor is None:
+            if options.log:
+                start_local_sensor("-l -d")
+            else:
+                start_local_sensor("-d")
         startstop(pidfile=core.PDI_FILE, action='start')
     else:
         print("Terminal Mode")
+        if options.no_local_sensor is None:
+            print("Local Sensor Mode Enabled - You will need to stop the Sensor manually")
+            if options.log:
+                start_local_sensor("-l -d")
+            else:
+                start_local_sensor("-d")
 
     main()
