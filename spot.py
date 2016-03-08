@@ -9,7 +9,7 @@ The Protocol:
     (End)
     After the function is done, the application go back to waiting for command mode
 """
-import os
+import os, sys
 import socket
 import time
 import datetime
@@ -199,8 +199,7 @@ def main():
                 request_discovery = True
             else:
                 # checking if device presence has changed
-                for k, v in devices_to_check.items():
-                    #print (v)
+                for k, v in devices_to_check.items():   # k = mac-address
                     if devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] > 0:
                         # was visible   ist visible     do nothing
                         log(str(k) + " is still presence. Loop : " + str(counter), "debug")
@@ -219,12 +218,12 @@ def main():
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'false')
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
                             " is not more seen since " + \
-                            str(devices_to_check[k]['first_not_seen']) + ". Update sent to CCU2", "info")
+                            str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "info")
 
                         if send_ok:      # successful
-                            log(str(k) + " successful updated change to CCU2", "debug")
+                            log(str(k) + " changes successful updated to CCU2", "debug")
                         else:
-                            log(str(k) + " problem by updated change to CCU2", "debug")
+                            log(str(k) + " got a problem by trying to send update to CCU2", "debug")
                         devices_to_check[k]['presence'] = 'False'                       # update the dict
                         # passing to a DB ->
                     elif devices_to_check[k]['presence'].lower() == 'false' and presence_of_devices[k] > 0:
@@ -232,11 +231,11 @@ def main():
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is seen now. Update send to CCU2", "info")
+                            " is here now. Update send to CCU2", "info")
                         if send_ok:      # successful
-                            log(str(k) + " successful updated change to CCU2", "debug")
+                            log(str(k) + " successful updated changes to CCU2", "debug")
                         else:
-                            log(str(k) + " problem by updated change to CCU2", "debug")
+                            log(str(k) + " problem by updating changes to CCU2", "debug")
                         devices_to_check[k]['times_not_seen'] = 0                       # reset not seen counter to 0
                         devices_to_check[k]['first_not_seen'] = None                    # reset first time stamp
                         devices_to_check[k]['presence'] = 'True'                        # update the dict
@@ -267,8 +266,9 @@ def main():
 def start_local_sensor(scrip_parameters):
     import subprocess
     scrip_name = 'spot_sensor.py'
+    script_abspath = core.PROG_DIR + '/' + scrip_name
 
-    if os.path.isfile(scrip_name):
+    if os.path.isfile(script_abspath):
         # Check if the Script is already running
         log("Script file is present, OK .", "debug")
         cmd_command = 'ps aux | grep ' + scrip_name + ' | grep -v grep'
@@ -290,8 +290,9 @@ def start_local_sensor(scrip_parameters):
 def stop_local_sensor():
     import subprocess
     scrip_name = 'spot_sensor.py'
+    script_abspath = core.PROG_DIR + '/' + scrip_name
 
-    if os.path.isfile(scrip_name):
+    if os.path.isfile(script_abspath):
         # Check if the Script is running
         log("Script file is present, OK .", "debug")
         cmd_command = 'ps aux | grep ' + scrip_name + ' | grep -v grep'
@@ -334,6 +335,9 @@ if __name__ == "__main__":
                  dest='status',  help="status of the daemon")
 
     options, args = p.parse_args()
+
+    ## initial vari
+    core.PROG_DIR, filename = os.path.split(sys.argv[0])
 
     if options.manually:
         # Set port
