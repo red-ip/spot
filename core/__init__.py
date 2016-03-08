@@ -14,7 +14,7 @@ AUTO_DISCOVERY = None
 SLEEP_TIMER = 20
 MAX_TIME_NOT_SEEN = 2   # by the Nr of not seen, update to the ccu will send
 
-IP_CCU = "192.168.180.220"  # "192.168.180.220"
+IP_CCU = "192.168.178.220"  # "192.168.180.22"
 CCU_LAST_UPDATE = None
 
 PDI_FILE = '/tmp/spot_check.pid' #"/var/run/myspot.pid"

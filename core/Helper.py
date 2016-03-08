@@ -139,5 +139,6 @@ def isProcessRunning(process_id):
     else:
         return True
 
+
 def pid_file_destroy(PDI_FILE):
     os.unlink(PDI_FILE)

@@ -84,7 +84,7 @@ def startstop(stdout='/dev/null', stderr=None, stdin='/dev/null',
               pidfile='pid.txt', startmsg='started with pid %s', action='start'):
     if action:
         try:
-            pf  = file(pidfile,'r')
+            pf  = file(pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:

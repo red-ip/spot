@@ -61,7 +61,7 @@ def update_dict_with_response(var_dict, var_response, sensor_ip="unknown"):
             dict_response[str(ks)] = str(vs)
 
     if len(dict_response) > 0:
-        ''' Updating the given dict with the datas from the sensor. '''
+        ''' Updating the given dict with the data's from the sensor. '''
         for k, v in dict_response.items():
             var_dict[k][key_val_to_update] = str(v)
     else:
@@ -72,11 +72,11 @@ def update_dict_with_response(var_dict, var_response, sensor_ip="unknown"):
 
 def check_device_dict_via_sensor(sensor_ip, sensor_port, device_dict):
     ''' Main Function!
-        Communicates with the sensor, trying to update (update_dict_with_response) the given device list. In case of
+        Communicates with the sensor, trying to update (update_dict_with_response) the given device's list. In case of
         problems the device list will be returned in any case.
     '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    timeout_calc = len(device_dict) * 6                                # for each device we add 5 Sec
+    timeout_calc = len(device_dict) * 6                                # we add 5 Sec for each device
     sock.settimeout(timeout_calc)
     sensor_address = (sensor_ip, int(sensor_port))
 
