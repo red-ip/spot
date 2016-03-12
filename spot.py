@@ -23,8 +23,13 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.udpclient import updclientstart
 from core.sensor_com import check_device_dict_via_sensor, check_sensor
 
-version = "1.2.2"
+
+version = "1.2.3"
 core.LOG_FILE_NAME = "spot_check"
+## initial vari
+core.PROG_DIR, filename = os.path.split(sys.argv[0])
+import core.config
+
 print("------------------- Spot %s -------------------") % version
 
 
@@ -335,9 +340,6 @@ if __name__ == "__main__":
                  dest='status',  help="status of the daemon")
 
     options, args = p.parse_args()
-
-    ## initial vari
-    core.PROG_DIR, filename = os.path.split(sys.argv[0])
 
     if options.manually:
         # Set port

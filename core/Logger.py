@@ -3,11 +3,11 @@ import core
 import random
 # log("Background scan for xxx information was startet", 'info')
 # info_level : info, error, debug
-version = "1.0.0"
+version = "1.0.1"
 
 
 def log(message, info_level):
-    log_file = core.LOG_FILE_LOCATION + core.LOG_FILE_NAME + ".log"
+    log_file = core.LOG_FILE_LOCATION + '/' + core.LOG_FILE_NAME + ".log"
     try:
         if core.DEBUG_LOG:
             logging.basicConfig(
