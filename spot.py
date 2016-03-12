@@ -27,7 +27,7 @@ from core.sensor_com import check_device_dict_via_sensor, check_sensor
 version = "1.2.3"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
-core.PROG_DIR, filename = os.path.split(sys.argv[0])
+core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
 import core.config
 
 print("------------------- Spot %s -------------------") % version
@@ -271,7 +271,7 @@ def main():
 def start_local_sensor(scrip_parameters):
     import subprocess
     scrip_name = 'spot_sensor.py'
-    script_abspath = core.PROG_DIR + '/' + scrip_name
+    script_abspath = '/opt/spot/' + scrip_name
 
     if os.path.isfile(script_abspath):
         # Check if the Script is already running
@@ -284,18 +284,18 @@ def start_local_sensor(scrip_parameters):
             log("Script is already running, OK .", "debug")
         else:
             log("Starting : " + scrip_name, "debug")
-            os.system(('python ' + scrip_name + ' -s'))                     # just in case, old pid-file is present
+            os.system(('python ' + script_abspath + ' -s'))                     # just in case, old pid-file is present
             time.sleep(1)                                                   # giving the os time
-            os.system(('python ' + scrip_name + ' ' + scrip_parameters))
+            os.system(('python ' + script_abspath + ' ' + scrip_parameters))
     else:
-        log("Can not start the local Sensor coz can't find " + scrip_name + " ! System will try to discover an"
+        log("Can not start the local Sensor coz can't find " + script_abspath + " ! System will try to discover an"
                                                                             " remote Sensor ", "error")
 
 
 def stop_local_sensor():
     import subprocess
     scrip_name = 'spot_sensor.py'
-    script_abspath = core.PROG_DIR + '/' + scrip_name
+    script_abspath = '/opt/spot/' + scrip_name
 
     if os.path.isfile(script_abspath):
         # Check if the Script is running
