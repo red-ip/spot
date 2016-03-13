@@ -3,16 +3,17 @@
 # -*- coding: <utf-8> -*-
 
 import core
-import os.path
+import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.0"
+version = "1.0.1"
 
 file_name = 'spot.cfg'
 
 # Test
 if __name__ == "__main__":
-    core.PROG_DIR = '/Users/marius/Documents/PyCharm/spot'
+    #core.PROG_DIR = '/Users/marius/Documents/PyCharm/spot'
+    core.LOG_FILE_LOCATION = '/Users/marius/Documents/PyCharm/spot/log'
     core.LOG_FILE_NAME = 'Test'
 
 
@@ -58,12 +59,15 @@ def writing_default_config_to_file():
     #   core.CFG.set('CCU', 'CCU_SUPPORT', True)
     core.CFG.set('CCU', 'IP_CCU', '192.168.178.220')
 
-
-    # Writing our configuration file to 'spot.cfg'
-    with open((core.PROG_DIR + '/' + file_name), 'wb') as configfile:
-        core.CFG.write(configfile)
-        configfile.close()
-
+    try:
+        # Writing our configuration file to 'spot.cfg'
+        with open((core.PROG_DIR + '/' + file_name), 'wb') as configfile:
+            core.CFG.write(configfile)
+            configfile.close()
+    except IOError:
+        log("Can not write the Config File. Exiting", "error")
+        print ('Can not write in : ' + core.PROG_DIR + '/' + file_name)
+        os._exit(0)
 
 if not check_file():
     writing_default_config_to_file()

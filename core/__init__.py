@@ -20,13 +20,10 @@ CCU_LAST_UPDATE = None
 
 PDI_FILE = '/tmp/spot_check.pid' #"/var/run/myspot.pid"
 
-PROG_DIR = None
+PROG_DIR = "/opt/spot"
 CFG = None
 
 
-ABS_PATH = None
 SYS_ENCODING = None
-
+ABS_PATH = None
 DB_FILE = None
-
-

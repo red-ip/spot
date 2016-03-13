@@ -24,7 +24,7 @@ from core.udpclient import updclientstart
 from core.sensor_com import check_device_dict_via_sensor, check_sensor
 
 
-version = "1.2.3"
+version = "1.2.5"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
@@ -87,7 +87,7 @@ def writelimes(mysock, mymsg):
     mysock.sendall(mymsg)
 
 
-def cumulate_sensor_data(sensor_data):
+def accumulate_sensor_data(sensor_data):
     ''' sensor_data
         ["192.168.1.100" = ["CC:29:F5:67:B7:EC" = [ (presence = True) ] ] ]
     '''
@@ -194,13 +194,13 @@ def main():
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
                     request_discovery = True
             presence_of_devices = {}
-            presence_of_devices = cumulate_sensor_data(sensor_data)
+            presence_of_devices = accumulate_sensor_data(sensor_data)
 
             # create a time stamp
             time_now = time.time()
             time_stamp = datetime.datetime.fromtimestamp(time_now).strftime('%Y-%m-%d-%H:%M:%S')
             if len(presence_of_devices) == 0:
-                log("All Sensors down. loop counter " + str(counter), "debug")
+                log("All Sensors Down. loop counter " + str(counter), "debug")
                 request_discovery = True
             else:
                 # checking if device presence has changed
@@ -246,7 +246,7 @@ def main():
                         devices_to_check[k]['presence'] = 'True'                        # update the dict
                         # passing to a DB ->
                     else:
-                        log(str(k) + " is still not presence", "debug")
+                        log(str(k) + " remains unavailable", "debug")
 
                 # if activated, send a alive signal to ccu2. To activate it, u need to create a
                 # system variable ('last_update_') on the ccu2
@@ -271,7 +271,7 @@ def main():
 def start_local_sensor(scrip_parameters):
     import subprocess
     scrip_name = 'spot_sensor.py'
-    script_abspath = '/opt/spot/' + scrip_name
+    script_abspath = core.PROG_DIR + '/' + scrip_name
 
     if os.path.isfile(script_abspath):
         # Check if the Script is already running
@@ -295,7 +295,7 @@ def start_local_sensor(scrip_parameters):
 def stop_local_sensor():
     import subprocess
     scrip_name = 'spot_sensor.py'
-    script_abspath = '/opt/spot/' + scrip_name
+    script_abspath = core.PROG_DIR + '/' + scrip_name
 
     if os.path.isfile(script_abspath):
         # Check if the Script is running
@@ -306,7 +306,7 @@ def stop_local_sensor():
         output, err = process.communicate()
         if len(output) > 0:
             log("Sending shutdown command, OK .", "debug")
-            os.system(('python ' + scrip_name + ' -s'))
+            os.system(('python ' + script_abspath + ' -s'))
         else:
             log("Script is not running : " + scrip_name, "debug")
     else:

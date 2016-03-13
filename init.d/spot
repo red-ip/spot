@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# Author: Marius Jaworowski
+#
+# /etc/init.d/spot
+#
+### BEGIN INIT INFO
+# Default-Start:   2 3 5
+# Default-Stop:    0 1 6
+# Short-Description: starts collectord for presence detection and send it to a CCU
+# Description:       Collector Daemon for the Presence detection of multiple rooms
+#
+# Installation:
+# - copy this file to /etc/init.d
+# - chmod 744 /etc/init.d/spot
+# - enable and edit in YAST system services
+### END INIT INFO
+
+
+COLLECTORD_BIN=/opt/spot/spot.py
+COLLECTORD_CFG=/opt/spot/spot.cfg
+COLLECTORD_OPTIONS=""
+COLLECTORD_PID="/tmp/spot_check.pid"
+
+NAME="spot"
+
+if [ ! -e "$COLLECTORD_BIN" ] ;then
+    echo "binary not found or not executable"
+    exit 7
+fi
+
+if [ ! -r "$COLLECTORD_CFG" ] ;then
+    echo "config file not found"
+    exit 6
+fi
+
+
+ case "$1" in
+   start)
+     echo -n "Start $NAME ..."
+     python $COLLECTORD_BIN -d &
+     #python /opt/spot/spot.py
+
+     if [ $? = "0" ] ;then
+    echo " OK"
+    exit 0
+
+     else
+    echo " FAILED"
+    exit 3
+     fi
+
+     ;;
+   stop)
+     if [ -r "$COLLECTORD_PID" ] ;then
+
+     echo  "Stopping $NAME"
+     python $COLLECTORD_BIN -s &
+    else
+     echo "$NAME is not running"
+    exit 0
+     fi
+     ;;
+   status)
+
+    if [ -r "$COLLECTORD_PID" ] ;then
+     pid=$(cat $COLLECTORD_PID)
+     cnt=`ps -ef | grep "$pid" | grep -v grep | wc -l`
+     if [ "$cnt" -eq "0" ] ; then
+       echo "$NAME is not running"
+       exit 3
+     else
+       echo "$NAME is running"
+       exit 0
+     fi
+    else
+    echo "no pidfile found. Spot is not running"
+    exit 3
+    fi
+     ;;
+
+   *)
+     echo "Usage: $NAME {start|stop|status}"
+   exit 1
+ esac
+ exit 0
