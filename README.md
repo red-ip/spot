@@ -59,6 +59,7 @@ sudo chmod 744 /etc/init.d/spot
 python spot.py -l -d
 
 
+
 ---
 
 nmap -p 80,443,1999,2001,8181 -n --open -oN output.txt  192.168.178.0/24
