@@ -2,7 +2,7 @@
 Bluetooth presents control for HomeMatic CCU2
 
 
-Mit “Sport” hast Du eine einfache und zuverlässige Möglichkeit die Anwesenheit von Personen zu prüfen und an die Haus-Automatisierung weiterzugeben.
+Mit “Spot” hast Du eine einfache und zuverlässige Möglichkeit die Anwesenheit von Personen zu prüfen und an die Haus-Automatisierung weiterzugeben.
 
 Die größten Vorteile sind:
 	Alles passiert Lokal ohne Internet und Dienstleister

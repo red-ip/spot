@@ -24,7 +24,7 @@ from core.udpclient import updclientstart
 from core.sensor_com import check_device_dict_via_sensor, check_sensor
 
 
-version = "1.2.6"
+version = "1.2.7"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"

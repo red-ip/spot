@@ -3,7 +3,7 @@
 import core
 import urllib2
 from core.Logger import log
-version = "1.0.0"
+version = "1.0.1"
 
 
 def get_device_to_check():

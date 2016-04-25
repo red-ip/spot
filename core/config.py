@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.2"
+version = "1.0.3"
 
 file_name = 'spot.cfg'
 
