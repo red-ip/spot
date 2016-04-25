@@ -29,38 +29,56 @@ Info : bei mir ist das Telefon mit dem Raspberry nie verbunden. Aber sie haben s
 
 Hier die wichtigsten Befehle:
 
-hcitool scan						Sucht nach BT Geräten
+hcitool scan						            Sucht nach BT Geräten
 
-hcitool dev						Zeigt den BT Adapter an
+hcitool dev						                Zeigt den BT Adapter an
 
 bluez-simple-agent hci0 70:48:0F:94:E3:3B		koppelt ein Geräte
 
-bluez-test-device list					Listet die gekoppelten Geräte an
+bluez-test-device list					        Listet die gekoppelten Geräte an
 
 
 2# Erstelle auf der CCU2 für jedes Gerät das Du abfragen willst einer System Variable (Logic value true = is true, false = is false)
 
 Der Name der Variablen: var_spot_CC:23:F5:45:BA:E4_marius_iPhone
 Die Variable ist wie folgt aufgebaut :
+
+
 “var_spot_”		= Hier dran erkennt das Programm die Variable, bleibt immer gleich
+
 “CC:23:F5:45:BA:E4”	= das ist die MAC Adresse des Gerät das überprüft werden soll
+
 “_marius"		= Name des Teilnehmers
+
 “_iPhone”		= Gerätename des Teilnehmers
+
 
 3# Erstelle auf der Programme auf der CCU2
 
 
+
 4# Spot installation
+
 sudo mkdir /opt/spot/
+
 sudo chown pi:pi /opt/spot/
+
 unzip -d /opt/spot spot.zip
+
 cd /opt/spot/
+
 python spot.py -s
+
 mcedit spot.cfg         ==> ip_ccu = <ip adresse der ccu2 eintragen>
+
 #more /opt/spot/init.d/spot
+
 sudo cp /opt/spot/init.d/spot /etc/init.d
+
 sudo chmod 744 /etc/init.d/spot
+
 # als Service regestrieren fehlt noch
+
 
 python spot.py -l -d
 
