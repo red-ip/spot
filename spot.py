@@ -24,9 +24,10 @@ from core.udpclient import updclientstart
 from core.sensor_com import check_device_dict_via_sensor, check_sensor
 
 
-version = "1.2.5"
+version = "1.2.6"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
+core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
 import core.config
 
@@ -407,7 +408,7 @@ if __name__ == "__main__":
     else:
         print("Terminal Mode")
         if options.no_local_sensor is None:
-            print("Local Sensor Mode Enabled - You will need to stop the Sensor manually")
+            print("Local Sensor Mode Enabled - You will need to stop the Sensor manually : python spot_sensor.py -s")
             if options.log:
                 start_local_sensor("-l -d")
             else:

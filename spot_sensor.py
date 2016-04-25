@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.3.8"
+version = "1.3.9"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -53,6 +53,7 @@ from core.bluetoothserver import check_device_dict
 from core.daemon import startstop
 
 from core.udpserver import updserverstart
+core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
 import core.config
 

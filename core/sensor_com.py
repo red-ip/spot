@@ -73,7 +73,7 @@ def update_dict_with_response(var_dict, var_response, sensor_ip="unknown"):
 def check_device_dict_via_sensor(sensor_ip, sensor_port, device_dict):
     ''' Main Function!
         Communicates with the sensor, trying to update (update_dict_with_response) the given device's list. In case of
-        problems the device list will be returned in any case.
+        problems the device list will be returned in anyway.
     '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     timeout_calc = len(device_dict) * 6                                # we add 5 Sec for each device

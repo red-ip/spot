@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.1"
+version = "1.0.2"
 
 file_name = 'spot.cfg'
 
@@ -60,7 +60,7 @@ def writing_default_config_to_file():
     core.CFG.set('CCU', 'IP_CCU', '192.168.178.220')
 
     try:
-        # Writing our configuration file to 'spot.cfg'
+        # Writing the configuration file to 'spot.cfg'
         with open((core.PROG_DIR + '/' + file_name), 'wb') as configfile:
             core.CFG.write(configfile)
             configfile.close()
@@ -72,7 +72,7 @@ def writing_default_config_to_file():
 if not check_file():
     writing_default_config_to_file()
     parse_config()
-    log("Pleas check if the configuration apply for you", "info")
+    log("Make sure the configuration apply for you", "info")
 else:
     load_config_from_file()
     parse_config()

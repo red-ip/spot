@@ -26,5 +26,5 @@ def updclientstart():
             core.SPOT_SENSOR[sensor_ip] = sensor_port
 
     except socket.timeout:
-        log(str(len(core.SPOT_SENSOR)) + " sensors discovered : " + str(core.SPOT_SENSOR), "info")
+        log(str(len(core.SPOT_SENSOR)) + " sensors discovered : " + str(core.SPOT_SENSOR), "debug")
     s.close()
