@@ -24,13 +24,19 @@ Bluetooth Adapter (RASPBERRY PI 3 hat Bluetooth integriert)
 Bluetooth muss auf dem Raspberry installiert und funktionsbereit sein.
 Jedes Gerät muss mit den Raspberry “gekoppelt” werden. ich bin nach der Anleitung unter den folgenden Link vorgegangen:
 http://www.wolfteck.com/projects/raspi/iphone/
+
 Info : bei mir ist das Telefon mit dem Raspberry nie verbunden. Aber sie haben sich gegenseitig bekanntgemacht - das reicht aus
 
 Hier die wichtigsten Befehle:
+
 hcitool scan						Sucht nach BT Geräten
+
 hcitool dev						Zeigt den BT Adapter an
+
 bluez-simple-agent hci0 70:48:0F:94:E3:3B		koppelt ein Geräte
+
 bluez-test-device list					Listet die gekoppelten Geräte an
+
 
 2# Erstelle auf der CCU2 für jedes Gerät das Du abfragen willst einer System Variable (Logic value true = is true, false = is false)
 
