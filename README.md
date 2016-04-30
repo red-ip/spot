@@ -89,14 +89,14 @@ mcedit spot.cfg         ==> ip_ccu = <ip adresse der ccu2 eintragen>
 sudo cp /opt/spot/init.d/spot /etc/init.d
 sudo chmod 744 /etc/init.d/spot
 
-- als Service regestrieren
+- als Service registrieren
 
 - Starte Spot
 sudo python spot.py -d		# Hierbei startet Spot auch einen lokalen (Spot-) Sensor
 
 
 Optional:
-Es ist möglich Spot als einen zusätzlich Sensor zu starten um zB die reichweiten von Bluethooth zu erweitern. Hierfür wird ein weiterer RASPBERRY PI benötigt. Die Einrichtung des Sensors ist identisch mit der bereits oben beschriebenen einrichtung von Spot bis auf den Aufruf des Programmes. Hierzu muss die folgende Datei editiert werden
+Es ist möglich Spot als einen zusätzlich Sensor zu starten um zB die Reichweiten von Bluetooth zu erweitern. Hierfür wird ein weiterer RASPBERRY PI benötigt. Die Einrichtung des Sensors ist identisch mit der bereits oben beschriebenen Einrichtung von Spot bis auf den Aufruf des Programmes. Hierzu muss die folgende Datei editiert werden
 /etc/init.d/spot
 
 ändere die Zeile 
@@ -107,5 +107,5 @@ COLLECTORD_BIN=/opt/spot/spot_sensor.py
 - Starte Spot_sensors
 sudo python /opt/spot/spot_sensor.py -d		
 
-Bedenke das Spot nach sensoren mittels Broadcast sucht, sollten disen sich nicht in der gleichen broadcast domäne befinden, kannst Spot mit dem Parameter "-m" gefolgt von <IP>:<PORT> eine Liste (Komma getrennt) an Sensoren mitgeben. 
+Bedenke das Spot nach Sensoren mittels Broadcast sucht, sollten disen sich nicht in der gleichen broadcast Domäne befinden, kannst Spot mit dem Parameter "-m" gefolgt von <IP>:<PORT> eine Liste (Komma getrennt) an Sensoren mitgeben. 
 
