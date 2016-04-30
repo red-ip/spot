@@ -76,22 +76,22 @@ Activity
 
 sudo mkdir /opt/spot/
 sudo chown pi:pi /opt/spot/
-# Besorge dir Spot von https://github.com/red-ip/spot/
-# und speicher alles unter /opt/spot/
+- Besorge dir Spot von https://github.com/red-ip/spot/
+- und speicher alles unter /opt/spot/
 
 cd /opt/spot/
 python spot.py -s	# Testlauf
 
-# editiere die /opt/spot/spot.cfg 
+- editiere die /opt/spot/spot.cfg 
 mcedit spot.cfg         ==> ip_ccu = <ip adresse der ccu2 eintragen>
 
-#more /opt/spot/init.d/spot
+- more /opt/spot/init.d/spot
 sudo cp /opt/spot/init.d/spot /etc/init.d
 sudo chmod 744 /etc/init.d/spot
 
-# als Service regestrieren
+- als Service regestrieren
 
-# Starte Spot
+- Starte Spot
 sudo python spot.py -d		# Hierbei startet Spot auch einen lokalen (Spot-) Sensor
 
 
@@ -104,7 +104,7 @@ COLLECTORD_BIN=/opt/spot/spot.py
 zu
 COLLECTORD_BIN=/opt/spot/spot_sensor.py
 
-# Starte Spot_sensors
+- Starte Spot_sensors
 sudo python /opt/spot/spot_sensor.py -d		
 
 Bedenke das Spot nach sensoren mittels Broadcast sucht, sollten disen sich nicht in der gleichen broadcast domäne befinden, kannst Spot mit dem Parameter "-m" gefolgt von <IP>:<PORT> eine Liste (Komma getrennt) an Sensoren mitgeben. 
