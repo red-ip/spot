@@ -77,7 +77,7 @@ Activity
 sudo mkdir /opt/spot/
 sudo chown pi:pi /opt/spot/
 # Besorge dir Spot von https://github.com/red-ip/spot/
-# und kopiere alles unter /opt/spot/
+# und speicher alles unter /opt/spot/
 
 cd /opt/spot/
 python spot.py -s	# Testlauf
