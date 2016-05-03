@@ -4,41 +4,110 @@ Bluetooth presents control for HomeMatic
 Mit “Spot” hast Du eine einfache und zuverlässige Möglichkeit die Anwesenheit von Personen zu prüfen und an deine Haus-Automatisierung weiterzugeben.
 
 Die größten Vorteile sind:
-	Alles passiert Lokal ohne Internet und Dienstleister
+	Alles passiert Lokal ohne Internet ,Dienstleister und VPN
 	Es fallen keine Laufenden Kosten an (ausser Strom)
 	Es ist sehr energiesparend (auch für das Telefon)
 	Geräteverwaltung passier über die CCU2, daher besonders einfach
-	Es lassen sich mehrere Sensoren einbinden, sodass man einen Reichweite von Bluethooth frei skalieren kann.
-
+	Es lassen sich mehrere Sensoren einbinden, sodass man die Reichweite von Bluetooth frei skalieren kann.
+	Protokollierung der Anwesenheit
+	Alles ist in Python geschrieben
 
 Welche Komponenten habe ich verwendet:
 HomeMatic CCU2 und XML-API CCU Addon
-RASPBERRY PI (mit Raspbian)
+RASPBERRY PI (mit RASPBIAN JESSIE)
 Bluetooth Adapter (RASPBERRY PI 3 hat Bluetooth integriert - habe es aber nicht getestet)
+
+Funktionsweise:
+Spot ist ein Programm das in Python geschrieben ist, damit läuft es praktisch auf jeder Platform, jedoch ist meine Anleitung auf dem RASPBERRY PI mit "RASPBIAN JESSIE" als Betriebsystem beschränkt. Spot besteht aus zwei Teilen, einem Server und einer beliebigen Anzahl an Sensoren. Der Server hat die Aufgabe mit der HomeMatic CCU zu kommunizieren und die Bluetooth Geräte, die Du überwachen willst an seine Sensoren zu schicken. Die Sensoren arbeiten die Listen mit den Bluetooth Geräte dann ab. Über eine Konfigurationsdatei kannst Du die wichtigsten Einstellungen wie zB die IP Adresse der HomeMatic CCU konfigurieren. Ich denke es macht Sinn das Telefon abzufragen, denn heutzutage haben wir es immer mit uns und jedes Telefon besitzt Bluetooth. In der WEBGUI deiner CCU bestimmst Du welche Geräte überwacht werden sollen.
+
+
 
 
 1# RASPBERRY PI
 Bluetooth muss auf dem Raspberry installiert und funktionsbereit sein.
-Jedes Gerät muss mit den Raspberry “gekoppelt” werden. ich bin nach der Anleitung unter den folgenden Link vorgegangen (Unter Pairing):
-http://www.wolfteck.com/projects/raspi/iphone/
+dazu die folgenden Pakete installieren.
+sudo su
+apt-get install bluetooth mc python-bluez
 
-Info : bei mir ist das Telefon mit dem Raspberry nie verbunden. Aber sie haben sich gegenseitig bekanntgemacht - das reicht aus!
+Jetzt koppeln wie das Telefon mit dem Raspberry
 
-Hier die wichtigsten Befehle:
-sudo aptitude install bluetooth bluez-utils bluez-compat
-hcitool scan						Sucht nach BT Geräten
-hcitool dev				                Zeigt den BT Adapter an
-bluez-simple-agent hci0 70:48:0F:94:E3:3B		koppelt ein Geräte
-bluez-test-device list				        Listet die gekoppelten Geräte an
+bluetoothctl		startet das Verwaltungsprogramm 
+power on		
 
-2# HomeMatic Konfiguration
+- Bring dein Telefon in den Status so das andere Geräte es pre BT erkennen können. Bei einen iPhone genügt es in die Bluetooth Enstellungen zu gehen. Solange BT eingeschaltet ist und sein Bildschirm an ist, kann das iPhone erkannt werden.
+- um  die MAC Adresse herausfinden, scannen wir die Umgebung : 
+scan on			suche nach dem iPhone. 
+Ausgabe:
+Discovery started
+[CHG] Controller 00:15:83:E5:79:36 Discovering: yes
+[NEW] Device 5E:7F:77:E1:D5:B5 5E-7F-77-E1-D5-B5
+[NEW] Device 4F:17:D2:BD:06:51 4F-17-D2-BD-06-51
+[NEW] Device 88:C6:26:65:90:C2 88-C6-26-65-90-C2
+[NEW] Device 41:04:EB:57:28:77 41-04-EB-57-28-77
+[NEW] Device 11:E7:77:74:17:EB 11-E7-77-74-17-EB
+[NEW] Device CC:29:F5:67:B7:EC CC-29-F5-67-B7-EC
+[CHG] Device CC:29:F5:67:B5:EC Name: iPhoneMarius
+[CHG] Device CC:29:F5:67:B5:EC Alias: iPhoneMarius
+[CHG] Device CC:29:F5:67:B5:EC UUIDs:
+	00001200-0000-1000-8000-00805f0b34fb
+	0000111f-0000-1000-8000-00805f0b34fb
+	0000112f-0000-1000-8000-00805f0b34fb
+	0000110a-0000-1000-8000-00805f0b34fb
+	0000110c-0000-1000-8000-00805f0b34fb
+	00001116-0000-1000-8000-00805f0b34fb
+	00001132-0000-1000-8000-00805f0b34fb
+	00000000-deca-fade-deca-deafdecacafe
+	2d8d2466-e14d-451c-88bc-7301abea291a
+
+- Mein Telefon ist iPhoneMarius, und die MAC-Adresse lautet CC:29:F5:67:B5:EC
+- Damit sind wir in der Lage das iPhone jetzt zu koppeln
+
+agent on
+pair CC:29:F5:67:B5:EC		Telefon muss sich in “discovery modus” befinden
+
+[bluetooth]# pair CC:29:F5:67:B5:EC 
+Attempting to pair with CC:29:F5:67:B5:EC
+[CHG] Device CC:29:F5:67:B5:EC Connected: yes
+Request confirmation
+[agent] Confirm passkey 476717 (yes/no): yes
+[CHG] Device CC:29:F5:67:B5:EC Modalias: bluetooth:v004Cp6E00d0930
+[CHG] Device CC:29:F5:67:B5:EC UUIDs:
+	00000000-deca-fade-deca-deafdecacafe
+	00001000-0000-1000-8000-00805f0b34fb
+	0000110a-0000-1000-8000-00805f0b34fb
+	0000110c-0000-1000-8000-00805f0b34fb
+	0000110e-0000-1000-8000-00805f0b34fb
+	00001116-0000-1000-8000-00805f0b34fb
+	0000111f-0000-1000-8000-00805f0b34fb
+	0000112f-0000-1000-8000-00805f0b34fb
+	00001132-0000-1000-8000-00805f0b34fb
+	00001200-0000-1000-8000-00805f0b34fb
+[CHG] Device CC:29:F5:67:B5:EC Paired: yes
+Pairing successful
+
+exit
+
+Jedes Gerät muss mit den Raspberry “gekoppelt” werden. ich bin nach der Anleitung unter den folgenden Link vorgegangen 
+https://wiki.archlinux.org/index.php/Bluetooth
+Bei Verwendung von mehreren Raspberry's (Spot-Sensor) muss das Telefon an jeden Raspberry für sich gekoppelt werden
+
+
+Damit das ganze auch nach einem Neustart zuverlässig funktioniert, muss eine Datei erstellt werden 
+mcedit /etc/udev/rules.d/10-local.rules
+
+mit dem folgenden Inhalt:
+ # Set bluetooth power up
+ACTION=="add", KERNEL=="hci0", RUN+="/usr/bin/hciconfig hci0 up"
+
+
+1# HomeMatic Konfiguration
 Erstelle auf der CCU2 für jedes Gerät das Du abfragen willst einer System Variable (Logic value true = is true, false = is false) Englische Schreibweise verwenden
 
-Der Name der Variablen: var_spot_CC:23:F5:45:BA:E4_marius_iPhone
+Der Name der Variablen: var_spot_CC:29:F5:67:B5:EC_marius_iPhone
 Die Variable ist wie folgt aufgebaut :
 
 “var_spot_”		= dadurch erkennt Spot die Variable, dies bleibt immer gleich
-“CC:23:F5:45:BA:E4”	= das ist die MAC Adresse des Gerätes das überprüft werden soll
+“CC:29:F5:67:B5:EC”	= das ist die Bluethooth MAC Adresse des Gerätes das überprüft werden soll
 “_marius"		= Name des Teilnehmers
 “_iPhone”		= Gerätename des Teilnehmers
 
