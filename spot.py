@@ -254,7 +254,7 @@ def main():
                 if core.CCU_LAST_UPDATE is not None:
                     send_ok = send_device_status_to_ccu('last_update_', '"' + time_stamp + '"')
 
-            if counter > 100:           # Rediscover after every x loops
+            if counter > 15:           # Rediscover after every x loops
                 counter = 0
                 request_discovery = True
 
