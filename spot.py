@@ -21,18 +21,38 @@ from core.Logger import log
 from core.daemon import startstop
 from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.udpclient import updclientstart
-from core.sensor_com import check_device_dict_via_sensor, check_sensor
+from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
 
 
-version = "1.2.7"
+version = "1.2.9"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
+#core.PROG_DIR = "/Users/marius/Documents/PyCharm/spot"
 import core.config
 
 print("------------------- Spot %s -------------------") % version
 
+
+def display_msg_on_sensors_display(MSG_Text):
+    # send the MSG to all sensors, store all in sensor_data[k]
+    for k, v in core.SPOT_SENSOR.items():
+        # (k)ey = IP-Address
+        # (v)alue = Port
+        log(str(k) + " sending msg to sensor's display : " + MSG_Text, "debug")
+        check_sensor(k, v)
+        time.sleep(1)
+        display_msg(k, v, MSG_Text)
+        '''
+        if check_sensor(k, v):  # ping the sensor
+
+            display_msg(k, v, MSG_Text)
+
+        else:
+
+            log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor - display_msg_on_sensors_display", "debug")
+        '''
 
 def writeline(mysock, mymsg):
     mysock.sendall(mymsg)
@@ -66,7 +86,7 @@ def read_tcp(mysock, recv_buffer=1024):
 
 def readlines(mysock, recv_buffer=4096, delim='\n'):
     """
-    :rtype: lese die TCP daten DS mit return getrennt
+    :rtype: read the TCP data
     """
     tcpbuffer = mysock.recv(recv_buffer)
 
@@ -131,8 +151,8 @@ def discovery_devices(wait_till_found=True):
 
 
 def discovery_sensors(wait_till_found=True):
-    # get look up for the sensors
-    # sensors are storage at core.SPOT_SENSOR
+    # look up for the sensors
+    # sensors are stored at core.SPOT_SENSOR
     try:
         while get_local_ip("8.8.8.8") is None:      # check if we have a ip
             time.sleep(1)
@@ -159,7 +179,7 @@ def main():
     # wait till we have an ip
     while get_local_ip("8.8.8.8") is None:
         time.sleep(1)
-    log("IP interface ready to go! local IP : " + str(get_local_ip("8.8.8.8")), "debug")
+    log("IP interface is ready to go! local IP : " + str(get_local_ip("8.8.8.8")), "debug")
 
     if core.AUTO_DISCOVERY:
         log("Running Auto Discovery for Sensors ", "debug")
@@ -171,7 +191,7 @@ def main():
     log("All parameters collected. System OK -> STARTING WORK", "info")
 
     try:
-        request_discovery = False               # sometimes I'll rediscover sensors and the "device to check list"
+        request_discovery = False               # time to time I'll rediscover sensors and the "device to check list"
         counter = 0                             # loop counter
         while True:
             counter += 1                        # count every loop
@@ -208,7 +228,7 @@ def main():
                 for k, v in devices_to_check.items():   # k = mac-address
                     if devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] > 0:
                         # was visible   ist visible     do nothing
-                        log(str(k) + " is still presence. Loop : " + str(counter), "debug")
+                        log(str(k) + " is still present. Loop : " + str(counter), "debug")
 
                     elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
                         devices_to_check[k]['times_not_seen'] < core.MAX_TIME_NOT_SEEN:
@@ -223,36 +243,41 @@ def main():
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'false')
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is not more seen since " + \
+                            " is last seen at " + \
                             str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "info")
 
                         if send_ok:      # successful
-                            log(str(k) + " changes successful updated to CCU2", "debug")
+                            log(str(k) + " changes successfully updated to CCU2", "debug")
                         else:
-                            log(str(k) + " got a problem by trying to send update to CCU2", "debug")
+                            log(str(k) + " problem trying to update changes to CCU2", "debug")
                         devices_to_check[k]['presence'] = 'False'                       # update the dict
+                        display_msg_on_sensors_display(str(devices_to_check[k]['name']) + " left")
+                        time.sleep(1)
                         # passing to a DB ->
+
                     elif devices_to_check[k]['presence'].lower() == 'false' and presence_of_devices[k] > 0:
                         # was not visible   ist visible        update ccu2, was visible = True, reset counter and stamp
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is here now. Update send to CCU2", "info")
+                            " is here now. Update is sent to CCU2", "info")
                         if send_ok:      # successful
-                            log(str(k) + " successful updated changes to CCU2", "debug")
+                            log(str(k) + " changes successfully updated to CCU2", "debug")
                         else:
-                            log(str(k) + " problem by updating changes to CCU2", "debug")
+                            log(str(k) + " problem trying to update changes to CCU2", "debug")
                         devices_to_check[k]['times_not_seen'] = 0                       # reset not seen counter to 0
                         devices_to_check[k]['first_not_seen'] = None                    # reset first time stamp
                         devices_to_check[k]['presence'] = 'True'                        # update the dict
+                        display_msg_on_sensors_display("Hallo " + str(devices_to_check[k]['name']))
+                        time.sleep(1)
                         # passing to a DB ->
                     else:
                         log(str(k) + " remains unavailable", "debug")
 
                 # if activated, send a alive signal to ccu2. To activate it, u need to create a
                 # system variable ('last_update_') on the ccu2
-                if core.CCU_LAST_UPDATE is not None:
-                    send_ok = send_device_status_to_ccu('last_update_', '"' + time_stamp + '"')
+                #if core.CCU_LAST_UPDATE is not None:
+                #    send_ok = send_device_status_to_ccu('last_update_', '"' + time_stamp + '"')
 
             if counter > 15:           # Rediscover after every x loops
                 counter = 0
@@ -285,11 +310,11 @@ def start_local_sensor(scrip_parameters):
             log("Script is already running, OK .", "debug")
         else:
             log("Starting : " + scrip_name, "debug")
-            os.system(('python ' + script_abspath + ' -s'))                     # just in case, old pid-file is present
+            os.system(('python ' + script_abspath + ' -s'))                 # just in case, old pid-file is present
             time.sleep(1)                                                   # giving the os time
             os.system(('python ' + script_abspath + ' ' + scrip_parameters))
     else:
-        log("Can not start the local Sensor coz can't find " + script_abspath + " ! System will try to discover an"
+        log("Not able to start local SENSOR due to its absence: " + script_abspath + " ! System will try to discover "
                                                                             " remote Sensor ", "error")
 
 
@@ -300,13 +325,13 @@ def stop_local_sensor():
 
     if os.path.isfile(script_abspath):
         # Check if the Script is running
-        log("Script file is present, OK .", "debug")
+        log("Script file is present: OK .", "debug")
         cmd_command = 'ps aux | grep ' + scrip_name + ' | grep -v grep'
 
         process = subprocess.Popen(cmd_command, shell=True, stdout=subprocess.PIPE)
         output, err = process.communicate()
         if len(output) > 0:
-            log("Sending shutdown command, OK .", "debug")
+            log("Sending shutdown command: OK .", "debug")
             os.system(('python ' + script_abspath + ' -s'))
         else:
             log("Script is not running : " + scrip_name, "debug")
@@ -350,7 +375,7 @@ if __name__ == "__main__":
         core.SPOT_SENSOR = dict(item.split(":") for item in options.manually.split(","))
         #except error:
         print "------------------- IP manual set to " + options.manually + " -------------------"
-        if len(core.SPOT_SENSOR) < 1:
+        if len(core.SPOT_SENSOR) < 8:
             p.error("Sensor IP and Port (10.1.1.2:10002) Mandatory if you not using Automatic Discovery Mode")
     else:
         core.AUTO_DISCOVERY = True

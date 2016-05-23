@@ -32,7 +32,7 @@ class Handler(BaseRequestHandler):
             reply = "%s:%i " % (Handler.my_addr, core.SRV_PORT)
             socket.sendto(reply, self.client_address)
         else:
-            log("Detected wrong upb request from client : " + str(self.client_address), "debug")
+            log("Detected wrong UDP request from client : " + str(self.client_address), "debug")
 
 
 def updserverstart():

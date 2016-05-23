@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.3.9"
+version = "1.4.4"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -55,6 +55,7 @@ from core.daemon import startstop
 from core.udpserver import updserverstart
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
+#core.PROG_DIR = "/Users/marius/Documents/PyCharm/spot"
 import core.config
 
 print ("------------------- spot_sensore %s -------------------") % version
@@ -104,9 +105,6 @@ def read_tcp(mysock, recv_buffer=1024):
 
 
 def readlines(mysock, recv_buffer=4096, delim='\n'):
-    """
-    :rtype: lese die TCP daten DS mit return getrennt
-    """
     tcpbuffer = mysock.recv(recv_buffer)
 
     while tcpbuffer.find(delim) != -1:
@@ -127,7 +125,8 @@ def writelimes(mysock, mymsg):
     mysock.sendall(mymsg)
 
 
-def isBefehl(v):
+def valid_command(v):
+    log("Sensor - Checking command: " + str(v), "debug")
     try:
         return v.lower() in ("checkdevice", "displaytext")
     except AttributeError:
@@ -136,6 +135,13 @@ def isBefehl(v):
 
 
 def main():
+    if core.PIFACECAD_SUPPORT:
+        import core.piface_display as lcd_display
+
+        lcd_display.init_support_switches()  # Optional
+        lcd_display.display_banner()
+        print("PIFACECAD_SUPPORT is Active")
+
     log("checking if ip interface is ready", "debug")
     # wait till we have an ip
     while get_local_ip("8.8.8.8") == None:
@@ -176,7 +182,11 @@ def main():
         try:
             log("Client is connected, IP : " + str(client_address), "debug")
             while True:
+
                 line = read_tcp(connection)
+
+                # test
+                valid_command(line)
 
                 if line == "checkdevice":
                     log("command received and accepted : " + str(line), "debug")
@@ -190,21 +200,21 @@ def main():
                     # checking if parameter is a mac address, if not delete this item
                     for k, v in parameters.items():
                         if is_mac(k) == False:
-                            log("parameters: " + str(k) + " is not a mac address an will be removed", "debug")
+                            log("parameters: " + str(k) + " is not a mac address and will be removed", "debug")
                             del parameters[k]    # remove entry with key 'Name'
 
                     # check if something left
                     number_of_items_in_dic = len(parameters)
                     if number_of_items_in_dic > 0:
-                        log("The number of valid parameters is: " + str(number_of_items_in_dic), "debug")
+                        log("The number of valid parameters (MAC-Address) is: " + str(number_of_items_in_dic), "debug")
                         # we have some mac-addresses to work with
                         # sent a ok to the client
                         writeline(connection, "True")
                         time.sleep(1)
                         # check if the mac can be seen and sent the result back to the client
-                        log("Transmitting the results back to the client", "debug")
+                        log("Transmitting the results back to the client (Spot collector)", "debug")
                         writeline_dict(connection, check_device_dict(parameters))
-                        log("Transition done", "debug")
+                        log("Transition is done", "debug")
 
                     else:
                         # we didn't find any mac address
@@ -212,15 +222,26 @@ def main():
                         break       # stopping the processing
 
                 elif line == "displaytext":
-                    print ("ghjkl") # function is not done
+                    log("Received text to Display, responding with True", "debug")
+                    writeline(connection, "True")
+                    line = read_tcp(connection)
+                    if core.PIFACECAD_SUPPORT:
+                        log("Displaying Text : " + str(line), "debug")
+                        lcd_display.display_msg(str(line))
+                        writeline(connection, "True")
+                    else:
+                        log("PIFACECAD_SUPPORT is not Enabled", "debug")
+                        writeline(connection, "Fals")
 
                 elif line == "ping":
                     log("Received ping, responding with True", "debug")
                     writeline(connection, "True")
 
                 else:
-                    log("Unknown command received and discarded : " + str(line), "debug")
-                    log("Responding with Fals", "debug")
+                    if line != "":
+                        log("Unknown command received: discarded : " + str(line), "debug")
+                        log("Responding with Fals", "debug")
+
                     writeline(connection, "Fals")
                     break
 

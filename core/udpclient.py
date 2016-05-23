@@ -17,7 +17,7 @@ def updclientstart():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
     s.settimeout(TIME_TO_DISCOVERY)
-    log("sending broadcast for discovery of the sensors", "debug")
+    log("sending broadcast to discover the sensors", "debug")
     s.sendto("spot", ("<broadcast>", PORT))
 
     try:

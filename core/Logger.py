@@ -3,7 +3,7 @@ import core
 import random
 # log("Background scan for xxx information was startet", 'info')
 # info_level : info, error, debug
-version = "1.0.1"
+version = "1.0.2"
 
 
 def log(message, info_level):
@@ -27,7 +27,7 @@ def log(message, info_level):
         print ('{:9}'.format(info_level) + message)
         core.LOG_FILE_NAME += str(random.randint(100, 999))
         print ('{:9}'.format("error") + "IO ERROR by writing to the log file, now log file : " +
-               str(core.LOG_FILE_LOCATION + core.LOG_FILE_NAME))
+               str(core.LOG_FILE_LOCATION + "/" + core.LOG_FILE_NAME))
 
     if not core.PROG_DAEMONIZE:
         print ('{:9}'.format(info_level) + message)

@@ -8,14 +8,15 @@ import time
 try:
     import bluetooth
 except (ImportError, NameError) as e:
-    log("bluetooth python Module is not installed", "error")
+    print("bluetooth python Module is not installed!")
+    #log("bluetooth python Module is not installed", "error")
 
 
 def checkdevice(mac):
     try:
         result2 = bluetooth.lookup_name(mac, timeout=5)
     except (bluetooth.btcommon.BluetoothError, NameError) as e:
-        log("bluetooth python Module is not installed - returning device is not present", "debug")
+        log("bluetooth python Module is not installed - returning : devices are not present", "debug")
         result2 = "None"
         time.sleep(3)
 

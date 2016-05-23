@@ -3,23 +3,21 @@
 import core
 import urllib2
 from core.Logger import log
-version = "1.0.1"
+version = "1.0.2"
 
 
 def get_device_to_check():
     try:
         response = urllib2.urlopen('http://' + str(core.IP_CCU) + '/config/xmlapi/sysvarlist.cgi', timeout=2)
     except (urllib2.URLError) as e:
-        log("Timeout by connection to ccu : " + str(core.IP_CCU), "error")
+        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
         print("There was an error: %r" % e)
         device_dict = None
         return device_dict
     except:
-        log("Timeout by connection to ccu : " + str(core.IP_CCU), "error")
-        print("There was an error")
+        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
         device_dict = None
         return device_dict
-
 
     html = response.read()                                                  # Lode XML files into the variable
     device_dict = {}                                                        #
@@ -39,8 +37,7 @@ def get_device_to_check():
             device_dic_val['times_not_seen'] = 0
 
             device_dict[nametmp[2]] = device_dic_val
-        elif var_mac.find('last_update_') != -1:
-            core.CCU_LAST_UPDATE = str(var_spot.get('value'))
+
     return device_dict
 
 
@@ -53,7 +50,7 @@ def send_device_status_to_ccu(ise_id, var_status):
         response = urllib2.urlopen(command, timeout=2)
 
     except urllib2.URLError, e:
-        log("Timeout in connection to ccu : " + str(core.IP_CCU), "error")
+        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
         if not core.PROG_DAEMONIZE:
             print("There was an error: %r" % e)
         return False

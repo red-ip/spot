@@ -16,12 +16,13 @@ SLEEP_TIMER = None
 MAX_TIME_NOT_SEEN = None
 
 IP_CCU = None
-CCU_LAST_UPDATE = None
 
 PDI_FILE = '/tmp/spot_check.pid' #"/var/run/myspot.pid"
 
 PROG_DIR = "/opt/spot"
 CFG = None
+
+PIFACECAD_SUPPORT = None
 
 
 SYS_ENCODING = None

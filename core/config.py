@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.3"
+version = "1.0.4"
 
 file_name = 'spot.cfg'
 
@@ -43,21 +43,25 @@ def parse_config():
 
     core.IP_CCU = core.CFG.get('CCU', 'IP_CCU')
 
+    core.PIFACECAD_SUPPORT = core.CFG.getboolean('PIFACECAD', 'PIFACECAD_SUPPORT')
+
 
 def writing_default_config_to_file():
     core.CFG = ConfigParser.RawConfigParser()
     core.CFG.add_section('SPOT')
     core.CFG.set('SPOT', 'LOG_FILE_LOCATION', '/opt/spot/log')
 
-    core.CFG.set('SPOT', 'SLEEP_TIMER_SEC', 80)
+    core.CFG.set('SPOT', 'SLEEP_TIMER_SEC', 40)
     core.CFG.set('SPOT', 'MAX_TIME_NOT_SEEN', 2)
 
     core.CFG.add_section('CLIENTS')
     core.CFG.set('CLIENTS', 'LOG_FILE_LOCATIONS_CLIENTS', '/opt/spot/log')
 
     core.CFG.add_section('CCU')
-    #   core.CFG.set('CCU', 'CCU_SUPPORT', True)
-    core.CFG.set('CCU', 'IP_CCU', '192.168.178.220')
+    core.CFG.set('CCU', 'IP_CCU', '192.168.180.220')
+
+    core.CFG.add_section('PIFACECAD')
+    core.CFG.set('PIFACECAD', 'PIFACECAD_SUPPORT', False)
 
     try:
         # Writing the configuration file to 'spot.cfg'
@@ -65,8 +69,8 @@ def writing_default_config_to_file():
             core.CFG.write(configfile)
             configfile.close()
     except IOError:
-        log("Can not write the Config File. Exiting", "error")
-        print ('Can not write in : ' + core.PROG_DIR + '/' + file_name)
+        log("unable to write the Config File. Exiting", "error")
+        print ('unable to write in : ' + core.PROG_DIR + '/' + file_name)
         os._exit(0)
 
 if not check_file():
