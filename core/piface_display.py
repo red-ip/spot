@@ -4,9 +4,10 @@
 
 import pifacecad
 from time import sleep
+from datetime import datetime
 from core.Helper import get_local_ip
 
-version = "1.0.3"
+version = "1.0.4"
 
 # Init the CAD
 def init_cad():
@@ -44,7 +45,9 @@ def blink_display(times=3):
 def display_msg(msg):
     cad.lcd.clear()
     cad.lcd.set_cursor(0, 0)
-    cad.lcd.write("Spot:")
+    current_time = datetime.now().time().strftime('%H:%M:%S')
+    display_text = "Spot!   {0}".format(current_time)
+    cad.lcd.write(display_text)
     cad.lcd.set_cursor(0, 1)
     cad.lcd.write(str(msg))
     blink_display()
