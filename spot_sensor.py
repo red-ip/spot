@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.4.4"
+version = "1.4.6"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -146,7 +146,8 @@ def main():
     # wait till we have an ip
     while get_local_ip("8.8.8.8") == None:
         time.sleep(1)
-    log("IP-Interface ready!", "debug")
+    myip = get_local_ip('8.8.8.8')
+    log("IP-Interface ready! - " + str(myip), "debug")
 
     # start to listing port 55555 for clients
     updserverstart()
@@ -157,6 +158,18 @@ def main():
 
     while True:
         time.sleep(1)
+        # check if we did lost the IP
+        if str(myip) != str(get_local_ip('8.8.8.8')):
+            log("ip interface changed - closing socket and tying to get a new IP", "info")
+            sock.close()
+            while get_local_ip("8.8.8.8") == None:
+                time.sleep(1)
+
+            myip = get_local_ip('8.8.8.8')
+            log("IP-Interface ready! - " + str(myip), "info")
+            sock = getsock()
+            sock.listen(1)
+
         try:
             log("Waiting for connection", "debug")
             sock.settimeout(600)

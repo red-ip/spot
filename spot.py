@@ -9,22 +9,23 @@ The Protocol:
     (End)
     After the function is done, the application go back to waiting for command mode
 """
-import os, sys
-import socket
-import time
-import datetime
 import copy
-import core
+import datetime
+import os
+import socket
+import sys
+import time
 from optparse import OptionParser
+
+import core
 from core.Helper import get_local_ip
 from core.Logger import log
 from core.daemon import startstop
 from core.homematic import get_device_to_check, send_device_status_to_ccu
-from core.udpclient import updclientstart
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
+from core.udpclient import updclientstart
 
-
-version = "1.2.9"
+version = "1.3.1"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -174,6 +175,10 @@ def discovery_sensors(wait_till_found=True):
 
 
 def main():
+    nearby_devices_counter = 0          # how many devices are in the coverage of Spot
+    devices_to_check_counter = 0        # how many devices to check
+    nearby_devices_counter_last_run = 0
+
     log("Starting to collect parameters", "info")
     log("checking if ip interface is ready", "debug")
     # wait till we have an ip
@@ -187,11 +192,11 @@ def main():
     log("Getting Devices for check from CCU2", "debug")
     # we will work with devices_to_check all the time and save the response from the sensors here
     devices_to_check = discovery_devices()
-
+    devices_to_check_counter = devices_to_check.__len__()
     log("All parameters collected. System OK -> STARTING WORK", "info")
 
     try:
-        request_discovery = False               # time to time I'll rediscover sensors and the "device to check list"
+        request_discovery = False               # from time to time I'll rediscover sensors and the "device to check list"
         counter = 0                             # loop counter
         while True:
             counter += 1                        # count every loop
@@ -201,6 +206,7 @@ def main():
                 log("Rediscovering Sensor and devices. Loop : " + str(counter), "debug")
                 devices_to_check = {}
                 devices_to_check = copy.deepcopy(discovery_devices())
+                devices_to_check_counter = devices_to_check.__len__()
                 discovery_sensors()
 
             # send the device list to all sensors, store all in sensor_data[k]
@@ -209,7 +215,7 @@ def main():
                 # (v)alue = Port
                 if check_sensor(k, v):  # ping the sensor
                     cp_device = {}
-                    cp_device = copy.deepcopy(devices_to_check)                     # avoiding references by deepcopy
+                    cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
                     sensor_data[k] = check_device_dict_via_sensor(k, v, cp_device)  # collect dates from all sensors
                 else:
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
@@ -268,7 +274,7 @@ def main():
                         devices_to_check[k]['times_not_seen'] = 0                       # reset not seen counter to 0
                         devices_to_check[k]['first_not_seen'] = None                    # reset first time stamp
                         devices_to_check[k]['presence'] = 'True'                        # update the dict
-                        display_msg_on_sensors_display("Hallo " + str(devices_to_check[k]['name']))
+                        display_msg_on_sensors_display("Hello " + str(devices_to_check[k]['name']))
                         time.sleep(1)
                         # passing to a DB ->
                     else:
@@ -278,6 +284,21 @@ def main():
                 # system variable ('last_update_') on the ccu2
                 #if core.CCU_LAST_UPDATE is not None:
                 #    send_ok = send_device_status_to_ccu('last_update_', '"' + time_stamp + '"')
+
+            # calculate how many devices are around
+            for dev, int_presence in presence_of_devices.items():  # dev = int (0 / 1)
+                nearby_devices_counter += int(int_presence)
+
+            log(str(nearby_devices_counter) + " of " + str(devices_to_check_counter) + " are in the coverage of Spot", "debug")
+            if nearby_devices_counter_last_run != nearby_devices_counter:
+                nearby_devices_counter_last_run = nearby_devices_counter
+                if nearby_devices_counter == 0:
+                    log("no more devices around", "info")
+                    # no one there. Start process
+
+               # else:
+                    # someone is there. Start process
+
 
             if counter > 15:           # Rediscover after every x loops
                 counter = 0
@@ -292,6 +313,10 @@ def main():
         else:
             print("KeyboardInterrupt received, stopping work ")
         os._exit(0)
+
+
+
+
 
 
 def start_local_sensor(scrip_parameters):
