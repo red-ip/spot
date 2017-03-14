@@ -13,9 +13,13 @@ PDI_FILE_SENSOR = '/tmp/spot_sensor.pid' #"/var/run/myspot.pid"
 SPOT_SENSOR = {}
 AUTO_DISCOVERY = None
 SLEEP_TIMER = None
+SLEEP_TIMER_IN = None
+SLEEP_TIMER_OUT = 10
 MAX_TIME_NOT_SEEN = None
+SENSOR_AVAILABLE = None
 
 IP_CCU = None
+CCU_CONNECTION_OK = None
 
 PDI_FILE = '/tmp/spot_check.pid' #"/var/run/myspot.pid"
 

@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
 from core.udpclient import updclientstart
 
-version = "1.3.1"
+version = "1.3.3"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -178,6 +178,7 @@ def main():
     nearby_devices_counter = 0          # how many devices are in the coverage of Spot
     devices_to_check_counter = 0        # how many devices to check
     nearby_devices_counter_last_run = 0
+    core.SLEEP_TIMER_IN = core.SLEEP_TIMER
 
     log("Starting to collect parameters", "info")
     log("checking if ip interface is ready", "debug")
@@ -217,6 +218,9 @@ def main():
                     cp_device = {}
                     cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
                     sensor_data[k] = check_device_dict_via_sensor(k, v, cp_device)  # collect dates from all sensors
+                    if not core.SENSOR_AVAILABLE:
+                        log("Sensor is online", "info")
+                        core.SENSOR_AVAILABLE = True
                 else:
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
                     request_discovery = True
@@ -227,6 +231,9 @@ def main():
             time_now = time.time()
             time_stamp = datetime.datetime.fromtimestamp(time_now).strftime('%Y-%m-%d-%H:%M:%S')
             if len(presence_of_devices) == 0:
+                if core.SENSOR_AVAILABLE:
+                    log("All Sensor are offline!", "error")
+                    core.SENSOR_AVAILABLE = False
                 log("All Sensors Down. loop counter " + str(counter), "debug")
                 request_discovery = True
             else:
@@ -242,15 +249,18 @@ def main():
                         devices_to_check[k]['times_not_seen'] += 1
                         if devices_to_check[k]['first_not_seen'] is None:
                             devices_to_check[k]['first_not_seen'] = time_stamp
+                            log(str(k) + " is first time no seen. Loop : " + str(counter), "debug")
 
                     elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
                                     devices_to_check[k]['times_not_seen'] >= core.MAX_TIME_NOT_SEEN:
                         # was visible   ist not visible = MAX!   update ccu2, was visible = False
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'false')
+                        log("OUT - " + str(devices_to_check[k]['name']) + " since " + \
+                            str(devices_to_check[k]['first_not_seen']) + ".", "info")
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
                             " is last seen at " + \
-                            str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "info")
+                            str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "debug")
 
                         if send_ok:      # successful
                             log(str(k) + " changes successfully updated to CCU2", "debug")
@@ -265,8 +275,10 @@ def main():
                         # was not visible   ist visible        update ccu2, was visible = True, reset counter and stamp
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
+                        log(" IN - " + str(devices_to_check[k]['name']) + " since " + str(time_stamp) + ".", "info")
+
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is here now. Update is sent to CCU2", "info")
+                            " is here now. Update is sent to CCU2", "debug")
                         if send_ok:      # successful
                             log(str(k) + " changes successfully updated to CCU2", "debug")
                         else:
@@ -285,7 +297,8 @@ def main():
                 #if core.CCU_LAST_UPDATE is not None:
                 #    send_ok = send_device_status_to_ccu('last_update_', '"' + time_stamp + '"')
 
-            # calculate how many devices are around
+            # calculate how many devices are around, for this run
+            nearby_devices_counter = 0
             for dev, int_presence in presence_of_devices.items():  # dev = int (0 / 1)
                 nearby_devices_counter += int(int_presence)
 
@@ -293,17 +306,20 @@ def main():
             if nearby_devices_counter_last_run != nearby_devices_counter:
                 nearby_devices_counter_last_run = nearby_devices_counter
                 if nearby_devices_counter == 0:
-                    log("no more devices around", "info")
+                    log("no more devices around", "debug")
                     # no one there. Start process
+                    core.SLEEP_TIMER = core.SLEEP_TIMER_OUT
 
-               # else:
+                else:
                     # someone is there. Start process
+                    log("devices around", "debug")
+                    core.SLEEP_TIMER = core.SLEEP_TIMER_IN
 
 
             if counter > 15:           # Rediscover after every x loops
                 counter = 0
                 request_discovery = True
-
+            log("going sleep for " + str(core.SLEEP_TIMER) + " s", "debug")
             time.sleep(core.SLEEP_TIMER)
 
     except KeyboardInterrupt:

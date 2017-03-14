@@ -3,19 +3,29 @@
 import core
 import urllib2
 from core.Logger import log
-version = "1.0.2"
+version = "1.0.3"
 
 
 def get_device_to_check():
+    log("Connecting to the CCU to get device list : " + str(core.IP_CCU), "debug")
     try:
         response = urllib2.urlopen('http://' + str(core.IP_CCU) + '/config/xmlapi/sysvarlist.cgi', timeout=2)
+        if not core.CCU_CONNECTION_OK:
+            log("Connection to the CCU establish (RX): " + str(core.IP_CCU), "info")
+            core.CCU_CONNECTION_OK = True
+
     except (urllib2.URLError) as e:
-        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
+        #	disrupted
+        if core.CCU_CONNECTION_OK:
+            log("Timeout by connection to the CCU (RX): " + str(core.IP_CCU), "error")
+            core.CCU_CONNECTION_OK = False
         print("There was an error: %r" % e)
         device_dict = None
         return device_dict
     except:
-        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
+        if core.CCU_CONNECTION_OK:
+            log("Timeout by connection to the CCU (RX): " + str(core.IP_CCU), "error")
+            core.CCU_CONNECTION_OK = False
         device_dict = None
         return device_dict
 
@@ -45,12 +55,17 @@ def send_device_status_to_ccu(ise_id, var_status):
     # send one Device Status at a time
     command = "http://" + str(core.IP_CCU) + "/config/xmlapi/statechange.cgi?ise_id=" + ise_id + "&new_value=" + \
               var_status
-    log("sendVariableToCCU2.befehl : " + str(command), "debug")
+    log("sendVariableToCCU2 Command : " + str(command), "debug")
     try:
         response = urllib2.urlopen(command, timeout=2)
+        if not core.CCU_CONNECTION_OK:
+            log("Connection to the CCU establish (TX): " + str(core.IP_CCU), "info")
+            core.CCU_CONNECTION_OK = True
 
     except urllib2.URLError, e:
-        log("Timeout by connection to the CCU : " + str(core.IP_CCU), "error")
+        if core.CCU_CONNECTION_OK:
+            log("Timeout by connection to the CCU (TX): " + str(core.IP_CCU), "error")
+            core.CCU_CONNECTION_OK = False
         if not core.PROG_DAEMONIZE:
             print("There was an error: %r" % e)
         return False

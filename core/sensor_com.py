@@ -72,14 +72,14 @@ def display_msg(sensor_ip, sensor_port, disp_text):
             if sensor_response == "True":
                 # OK
                 log("Sensor " + str(sensor_ip) +
-                    "has displayed Text: " + disp_text , "debug")
+                    " has displayed Text: " + disp_text , "debug")
             else:
                 # ERR
                 log("Sensor " + str(sensor_ip) +
-                    "has not displayed Text: " + disp_text , "debug")
+                    " has not displayed Text: " + disp_text , "debug")
         else:
             log("Sensor " + str(sensor_ip) +
-                "did not understand the command " + sensor_command, "debug")
+                " did not understand the command " + sensor_command, "debug")
 
     except (socket.timeout, socket.error):
         log("Sensor " + str(sensor_ip) +
