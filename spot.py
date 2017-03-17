@@ -32,6 +32,7 @@ core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
 core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0])
 #core.PROG_DIR = "/Users/marius/Documents/PyCharm/spot"
 import core.config
+core.SLEEP_TIMER_IN = core.SLEEP_TIMER  # must be after import core.config
 
 print("------------------- Spot %s -------------------") % version
 
@@ -178,7 +179,6 @@ def main():
     nearby_devices_counter = 0          # how many devices are in the coverage of Spot
     devices_to_check_counter = 0        # how many devices to check
     nearby_devices_counter_last_run = 0
-    core.SLEEP_TIMER_IN = core.SLEEP_TIMER
 
     log("Starting to collect parameters", "info")
     log("checking if ip interface is ready", "debug")
