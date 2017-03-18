@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
 from core.udpclient import updclientstart
 
-version = "1.3.3"
+version = "1.3.5"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -176,7 +176,7 @@ def discovery_sensors(wait_till_found=True):
 
 
 def main():
-    nearby_devices_counter = 0          # how many devices are in the coverage of Spot
+    nearby_devices_counter = 0          # how many devices are in the coverage of Spot / in the Homezone
     devices_to_check_counter = 0        # how many devices to check
     nearby_devices_counter_last_run = 0
 
@@ -202,6 +202,7 @@ def main():
         while True:
             counter += 1                        # count every loop
             sensor_data = {}
+            pre_lookup = True                  # to speed up detection
             if request_discovery:               # in some cases we will need to rediscover sensors and devices
                 request_discovery = False
                 log("Rediscovering Sensor and devices. Loop : " + str(counter), "debug")
@@ -212,12 +213,22 @@ def main():
 
             # send the device list to all sensors, store all in sensor_data[k]
             for k, v in core.SPOT_SENSOR.items():
-                # (k)ey = IP-Address
-                # (v)alue = Port
+                # (k)ey = IP-Address of the Sensor
+                # (v)alue = Port of the Sensor
                 if check_sensor(k, v):  # ping the sensor
                     cp_device = {}
                     cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
                     sensor_data[k] = check_device_dict_via_sensor(k, v, cp_device)  # collect dates from all sensors
+
+                    # to speed up detection and to send the msg to the ccu2 a user entered the homezone
+                    if nearby_devices_counter == 0 and pre_lookup:
+                        for item_dev, itemd in sensor_data[k].items():
+                            if itemd['presence'].lower() == 'true':
+                                pre_lookup = False
+                                send_ok = send_device_status_to_ccu(itemd['ise_id'], 'true')
+                                display_msg_on_sensors_display("Hello " + str(itemd['name']))
+                                break
+
                     if not core.SENSOR_AVAILABLE:
                         log("Sensor is online", "info")
                         core.SENSOR_AVAILABLE = True
