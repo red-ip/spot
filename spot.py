@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
 from core.udpclient import updclientstart
 
-version = "1.3.5"
+version = "1.3.6"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -252,6 +252,8 @@ def main():
                 for k, v in devices_to_check.items():   # k = mac-address
                     if devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] > 0:
                         # was visible   ist visible     do nothing
+                        devices_to_check[k]['first_not_seen'] = None
+                        devices_to_check[k]['times_not_seen'] = 0
                         log(str(k) + " is still present. Loop : " + str(counter), "debug")
 
                     elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
