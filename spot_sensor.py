@@ -2,7 +2,7 @@
 #
 # -*- coding: <utf-8> -*-
 """
-
+<<mrs>>
 The Protocol:
     (Start)
     Expecting first a function that should be processed
@@ -22,7 +22,7 @@ The Protocol:
                     are divided by "|"
                                                                         a3:d2:b8:89:43:ac|True\n
                                                                         03:d2:b8:89:df:23|False\n
-                    performance info: the check of each mac can tack up to 2-3s
+                    performance info: the check of each mac can take up to 2-3s
                     after the list was send, the function ist done
                     > checkdevice
                     < True
@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.4.6"
+version = "1.5.0"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -58,8 +58,9 @@ core.PROG_DIR = '/opt/spot'  #core.PROG_DIR, filename = os.path.split(sys.argv[0
 #core.PROG_DIR = "/Users/marius/Documents/PyCharm/spot"
 import core.config
 
+hostname = str(socket.gethostname())
 print ("------------------- spot_sensore %s -------------------") % version
-
+print ("---------- Sensor name : " + hostname + " ----------")
 
 def writeline(mysock, mymsg):
     mysock.sendall(mymsg)
@@ -128,7 +129,7 @@ def writelimes(mysock, mymsg):
 def valid_command(v):
     log("Sensor - Checking command: " + str(v), "debug")
     try:
-        return v.lower() in ("checkdevice", "displaytext")
+        return v.lower() in ("checkdevice", "displaytext", "gethostname")
     except AttributeError:
         print("Attribute Error")
         return False
@@ -151,6 +152,7 @@ def main():
 
     # start to listing port 55555 for clients
     updserverstart()
+    log("Local Hostname is : " + hostname, "info")
 
     # Bind the socket to the address given on the command line
     sock = getsock()
@@ -249,6 +251,10 @@ def main():
                 elif line == "ping":
                     log("Received ping, responding with True", "debug")
                     writeline(connection, "True")
+
+                elif line == "gethostname":
+                    log("Get Hostname received, responding with hostname", "debug")
+                    writeline(connection, hostname)
 
                 else:
                     if line != "":

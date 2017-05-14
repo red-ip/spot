@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.4"
+version = "1.0.5"
 
 file_name = 'spot.cfg'
 
@@ -28,7 +28,6 @@ def check_file():
 
 
 def load_config_from_file():
-    print("lading CFG")
     core.CFG = ConfigParser.RawConfigParser()
     core.CFG.read((core.PROG_DIR + '/' + file_name))
 
@@ -80,5 +79,5 @@ if not check_file():
 else:
     load_config_from_file()
     parse_config()
-    log("Lading Config file", "debug")
+    log("Load Config file.. " + core.PROG_DIR + '/' + file_name, "info")
 

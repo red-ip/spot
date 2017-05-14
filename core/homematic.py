@@ -45,6 +45,7 @@ def get_device_to_check():
             device_dic_val['ise_id'] = str(var_spot.get('ise_id'))
             device_dic_val['first_not_seen'] = None
             device_dic_val['times_not_seen'] = 0
+            device_dic_val['seen_by'] = {}
 
             device_dict[nametmp[2]] = device_dic_val
 

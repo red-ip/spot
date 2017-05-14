@@ -22,10 +22,10 @@ from core.Helper import get_local_ip
 from core.Logger import log
 from core.daemon import startstop
 from core.homematic import get_device_to_check, send_device_status_to_ccu
-from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg
+from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name
 from core.udpclient import updclientstart
 
-version = "1.3.6"
+version = "1.4.1"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -110,7 +110,7 @@ def writelimes(mysock, mymsg):
     mysock.sendall(mymsg)
 
 
-def accumulate_sensor_data(sensor_data):
+def accumulate_sensor_data(sensor_data, byRef_devices):
     ''' sensor_data
         ["192.168.1.100" = ["CC:29:F5:67:B7:EC" = [ (presence = True) ] ] ]
     '''
@@ -122,11 +122,17 @@ def accumulate_sensor_data(sensor_data):
                     device_dict[device_key] += 1
                 except KeyError:
                     device_dict[device_key] = 1
+
+                byRef_devices[device_key]['seen_by'][k] = True
+
             else:
                 try:
                     device_dict[device_key] += 0
                 except KeyError:
                     device_dict[device_key] = 0
+
+                byRef_devices[device_key]['seen_by'][k] = False
+
     return device_dict
 
 
@@ -202,16 +208,26 @@ def main():
         while True:
             counter += 1                        # count every loop
             sensor_data = {}
-            pre_lookup = True                  # to speed up detection
+            pre_lookup = True                   # to speed up detection
             if request_discovery:               # in some cases we will need to rediscover sensors and devices
                 request_discovery = False
                 log("Rediscovering Sensor and devices. Loop : " + str(counter), "debug")
                 devices_to_check = {}
                 devices_to_check = copy.deepcopy(discovery_devices())
                 devices_to_check_counter = devices_to_check.__len__()
-                discovery_sensors()
 
-            # send the device list to all sensors, store all in sensor_data[k]
+                tmp_sensor_before = {}
+                tmp_sensor_before = copy.deepcopy(core.SPOT_SENSOR)
+                discovery_sensors()
+                tmp_sensor_after = {}
+                tmp_sensor_after = copy.deepcopy(core.SPOT_SENSOR)
+
+                for sensor in tmp_sensor_after:                              # send to log if a new sensor was found
+                    if sensor not in tmp_sensor_before.keys():
+                        hostnamesensor = get_sensor_name(sensor, sensor_port)
+                        log("Sensor :" + str(sensor) + " (" + str(hostnamesensor) + ") is online", "info")
+
+                    # send the device list to all sensors, store all in sensor_data[k]
             for k, v in core.SPOT_SENSOR.items():
                 # (k)ey = IP-Address of the Sensor
                 # (v)alue = Port of the Sensor
@@ -230,13 +246,18 @@ def main():
                                 break
 
                     if not core.SENSOR_AVAILABLE:
-                        log("Sensor is online", "info")
+                        # eine Liste mit den gefundenenen Sensoren erstellen und ausgeben
+                        for sensor_ip, sensor_port in core.SPOT_SENSOR.items():
+                            hostnamesensor = get_sensor_name(sensor_ip, sensor_port)
+                            log("Sensor :" + str(sensor_ip) + " (" + str(hostnamesensor) + ") is online", "info")
+
                         core.SENSOR_AVAILABLE = True
                 else:
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
+                    log("Sensor : " + str(k) + " . Disconnected", "info")
                     request_discovery = True
             presence_of_devices = {}
-            presence_of_devices = accumulate_sensor_data(sensor_data)
+            presence_of_devices = accumulate_sensor_data(sensor_data, devices_to_check)
 
             # create a time stamp
             time_now = time.time()
@@ -254,7 +275,13 @@ def main():
                         # was visible   ist visible     do nothing
                         devices_to_check[k]['first_not_seen'] = None
                         devices_to_check[k]['times_not_seen'] = 0
-                        log(str(k) + " is still present. Loop : " + str(counter), "debug")
+
+                        seen_by = ""
+                        for items in devices_to_check[k]['seen_by']:
+                            if devices_to_check[k]['seen_by'][items]:
+                                seen_by = seen_by + str(items) + " "
+
+                        log(str(k) + " is still present. Loop : " + str(counter) + " Seen by : " + seen_by, "debug")
 
                     elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
                         devices_to_check[k]['times_not_seen'] < core.MAX_TIME_NOT_SEEN:
@@ -288,7 +315,13 @@ def main():
                         # was not visible   ist visible        update ccu2, was visible = True, reset counter and stamp
                         # send update to ccu2
                         send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
-                        log(" IN - " + str(devices_to_check[k]['name']) + " since " + str(time_stamp) + ".", "info")
+                        seen_by = ""
+                        for items in devices_to_check[k]['seen_by']:
+                            if devices_to_check[k]['seen_by'][items]:
+                                seen_by = seen_by + str(items) + " "
+
+                        log(" IN - " + str(devices_to_check[k]['name']) + " since " + str(time_stamp) + ". Seen by : " + \
+                            seen_by, "info")
 
                         log(str(k) + " - " + str(devices_to_check[k]['name']) + \
                             " is here now. Update is sent to CCU2", "debug")
@@ -329,7 +362,7 @@ def main():
                     core.SLEEP_TIMER = core.SLEEP_TIMER_IN
 
 
-            if counter > 15:           # Rediscover after every x loops
+            if counter > 15:           # Rediscover after every 15 loops
                 counter = 0
                 request_discovery = True
             log("going sleep for " + str(core.SLEEP_TIMER) + " s", "debug")

@@ -12,7 +12,7 @@ import socket
 from core.Logger import log
 from time import sleep
 from core import PIFACECAD_SUPPORT
-version = "1.0.2"
+version = "1.1.0"
 
 
 def writeline_dict(mysock, my_dict):
@@ -158,6 +158,43 @@ def check_device_dict_via_sensor(sensor_ip, sensor_port, device_dict):
         log("Sensor " + str(sensor_ip) +
             " timeout - sensor_com.py - check_device_dict_via_sensor", "error")
         return device_dict_processed
+
+    finally:
+        sock.close()
+
+
+def get_sensor_name(sensor_ip, sensor_port):
+    ''' Sub Function
+        To get the Hostname of the Sensor
+    '''
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(6)
+    sensor_address = (sensor_ip, int(sensor_port))
+
+    try:
+
+        sock.connect(sensor_address)
+        sensor_command = "gethostname"
+        sock.sendall(sensor_command)
+        sleep(0.5)
+        sensor_response = sock.recv(16)
+
+        if sensor_response != "Fals":
+            # Sensor accepted the command
+            log("Sensor " + str(sensor_ip) +
+                " replied with " + sensor_response + " to " + sensor_command, "debug")
+            return sensor_response
+
+        else:
+            log("Sensor " + str(sensor_ip) +
+                " did not understand the command " + sensor_command + ". Sensor need an Update!", "debug")
+            return "unknown"
+
+    except (socket.timeout, socket.error):
+        log("Sensor " + str(sensor_ip) +
+            " timeout - sensor_com.py - get_sensor_name", "error")
+        return "unknown"
 
     finally:
         sock.close()
