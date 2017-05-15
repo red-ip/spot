@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name
 from core.udpclient import updclientstart
 
-version = "1.4.1"
+version = "1.4.2"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -231,10 +231,13 @@ def main():
             for k, v in core.SPOT_SENSOR.items():
                 # (k)ey = IP-Address of the Sensor
                 # (v)alue = Port of the Sensor
+                log("checking if : " + str(k) + " . ready to receive the device list", "debug")
                 if check_sensor(k, v):  # ping the sensor
+                    log(str(k) + " . is ready to receive the device list. Sending list..", "debug")
                     cp_device = {}
                     cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
                     sensor_data[k] = check_device_dict_via_sensor(k, v, cp_device)  # collect dates from all sensors
+                    log(str(k) + " done..", "debug")
 
                     # to speed up detection and to send the msg to the ccu2 a user entered the homezone
                     if nearby_devices_counter == 0 and pre_lookup:
@@ -256,6 +259,7 @@ def main():
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
                     log("Sensor : " + str(k) + " . Disconnected", "info")
                     request_discovery = True
+            log("Beginning to calculate the presence information from the Sensors", "debug")
             presence_of_devices = {}
             presence_of_devices = accumulate_sensor_data(sensor_data, devices_to_check)
 
@@ -358,7 +362,7 @@ def main():
 
                 else:
                     # someone is there. Start process
-                    log("devices around", "debug")
+                    log(str(nearby_devices_counter) + " devices around", "debug")
                     core.SLEEP_TIMER = core.SLEEP_TIMER_IN
 
 
