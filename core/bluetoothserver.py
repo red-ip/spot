@@ -14,7 +14,7 @@ except (ImportError, NameError) as e:
 
 def checkdevice(mac):
     try:
-        result2 = bluetooth.lookup_name(mac, timeout=3)
+        result2 = bluetooth.lookup_name(mac, timeout=3)         # Min is 3
     except (bluetooth.btcommon.BluetoothError, NameError) as e:
         log("bluetooth python Module is not installed - returning : devices are not present", "error")
         result2 = "None"
