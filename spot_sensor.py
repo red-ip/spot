@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.5.0"
+version = "1.6.1"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -129,7 +129,7 @@ def writelimes(mysock, mymsg):
 def valid_command(v):
     log("Sensor - Checking command: " + str(v), "debug")
     try:
-        return v.lower() in ("checkdevice", "displaytext", "gethostname")
+        return v.lower() in ("checkdevice", "displaytext", "gethostname", "rgbled")
     except AttributeError:
         print("Attribute Error")
         return False
@@ -142,6 +142,11 @@ def main():
         lcd_display.init_support_switches()  # Optional
         lcd_display.display_banner()
         print("PIFACECAD_SUPPORT is Active")
+
+    if core.RGBLED_SUPPORT:
+        import core.rgbled as rgb_led
+        rgb_led.set_color('011')
+        print("RGBLED_SUPPORT is Active")
 
     log("checking if ip interface is ready", "debug")
     # wait till we have an ip
@@ -256,6 +261,18 @@ def main():
                     log("Get Hostname received, responding with hostname", "debug")
                     writeline(connection, hostname)
 
+                elif line == "rgbled":
+                    log("Received RGB Code to Display, responding with True", "debug")
+                    writeline(connection, "True")
+                    line = read_tcp(connection)
+                    if core.RGBLED_SUPPORT:
+                        log("Displaying RGB LED : " + str(line), "debug")
+                        rgb_led.set_color(line)
+
+                        writeline(connection, "True")
+                    else:
+                        log("RGBLED_SUPPORT is not Enabled", "debug")
+                        writeline(connection, "Fals")
                 else:
                     if line != "":
                         log("Unknown command received: discarded : " + str(line), "debug")
@@ -280,7 +297,8 @@ def main():
                 sock.close()
                 sock = getsock()
                 sock.listen(1)
-
+            if core.RGBLED_SUPPORT:
+                rgb_led.set_color('000')
 
 if __name__ == "__main__":
     # Set up and gather command line arguments

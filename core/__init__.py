@@ -7,7 +7,7 @@ LOG_FILE_NAME = None
 LOG_FILE_LOCATIONS_CLIENTS = None
 #spot_sensor.log"
 
-PDI_FILE_SENSOR = '/tmp/spot_sensor.pid' #"/var/run/myspot.pid"
+PDI_FILE_SENSOR = '/tmp/spot_sensor.pid'
 
 
 SPOT_SENSOR = {}
@@ -21,13 +21,19 @@ SENSOR_AVAILABLE = None
 IP_CCU = None
 CCU_CONNECTION_OK = None
 
-PDI_FILE = '/tmp/spot_check.pid' #"/var/run/myspot.pid"
+PDI_FILE = '/tmp/spot_check.pid'
 
 PROG_DIR = "/opt/spot"
 CFG = None
 
 PIFACECAD_SUPPORT = None
 
+RGBLED_SUPPORT = None
+RGBLED_RED = None
+RGBLED_GREEN = None
+RGBLED_BLUE = None
+
+BT_SUPPORT = True
 
 SYS_ENCODING = None
 ABS_PATH = None

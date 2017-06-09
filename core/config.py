@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.5"
+version = "1.0.7"
 
 file_name = 'spot.cfg'
 
@@ -44,6 +44,14 @@ def parse_config():
 
     core.PIFACECAD_SUPPORT = core.CFG.getboolean('PIFACECAD', 'PIFACECAD_SUPPORT')
 
+    try:
+        core.RGBLED_SUPPORT = core.CFG.getboolean('RGBLED', 'RGBLED_SUPPORT')
+        core.RGBLED_RED = core.CFG.getfloat('RGBLED', 'RGBLED_RED')
+        core.RGBLED_GREEN = core.CFG.getfloat('RGBLED', 'RGBLED_GREEN')
+        core.RGBLED_BLUE = core.CFG.getfloat('RGBLED', 'RGBLED_BLUE')
+
+    except ConfigParser.NoSectionError:
+        core.RGBLED_SUPPORT = False
 
 def writing_default_config_to_file():
     core.CFG = ConfigParser.RawConfigParser()
@@ -61,6 +69,12 @@ def writing_default_config_to_file():
 
     core.CFG.add_section('PIFACECAD')
     core.CFG.set('PIFACECAD', 'PIFACECAD_SUPPORT', False)
+
+    core.CFG.add_section('RGBLED')
+    core.CFG.set('RGBLED', 'RGBLED_SUPPORT', False)
+    core.CFG.set('RGBLED', 'RGBLED_RED', 24)
+    core.CFG.set('RGBLED', 'RGBLED_GREEN', 23)
+    core.CFG.set('RGBLED', 'RGBLED_BLUE', 25)
 
     try:
         # Writing the configuration file to 'spot.cfg'
