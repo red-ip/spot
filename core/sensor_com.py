@@ -51,7 +51,7 @@ def display_rgbled(sensor_ip, sensor_port, rgb_code):
 
     '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(4)
+    sock.settimeout(5)      # timeout should be 5
     sensor_address = (sensor_ip, int(sensor_port))
     try:
 

@@ -521,7 +521,7 @@ if __name__ == "__main__":
         print "------------------- Preparing to run in daemon mode -------------------"
         log("Preparing to run in daemon mode", "info")
         if options.no_local_sensor is None:
-            if options.log:
+            if core.DEBUG_LOG:
                 start_local_sensor("-l -d")
             else:
                 start_local_sensor("-d")
@@ -530,7 +530,7 @@ if __name__ == "__main__":
         print("Terminal Mode")
         if options.no_local_sensor is None:
             print("Local Sensor Mode Enabled - You will need to stop the Sensor manually : python spot_sensor.py -s")
-            if options.log:
+            if core.DEBUG_LOG:
                 start_local_sensor("-l -d")
             else:
                 start_local_sensor("-d")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # -*- coding: <utf-8> -*-
-version = "1.0.2"
+version = "1.0.3"
 from core.Logger import log
 import time
 import core
@@ -21,6 +21,8 @@ def checkdevice(mac):
             log("bluetooth python Module is not installed - returning : devices are not present", "error")
             result2 = "None"
             time.sleep(1.2)
+    else:
+        result2 = "None"
 
     if str(result2) != "None":
         log("bluetooth lookup for MAC : " + str(result2) + " : True ", "debug")

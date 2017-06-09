@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.6.1"
+version = "1.6.2"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -129,7 +129,7 @@ def writelimes(mysock, mymsg):
 def valid_command(v):
     log("Sensor - Checking command: " + str(v), "debug")
     try:
-        return v.lower() in ("checkdevice", "displaytext", "gethostname", "rgbled")
+        return v.lower() in ("ping", "checkdevice", "displaytext", "gethostname", "rgbled")
     except AttributeError:
         print("Attribute Error")
         return False
@@ -206,7 +206,11 @@ def main():
                 line = read_tcp(connection)
 
                 # test
-                valid_command(line)
+                if valid_command(line) == False:
+                    writeline(connection, "Fals")
+                    log("Unknown command received: discarded : " + str(line), "debug")
+                    log("Responding with Fals", "debug")
+                    break
 
                 if line == "checkdevice":
                     log("command received and accepted : " + str(line), "debug")
