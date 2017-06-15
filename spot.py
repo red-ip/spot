@@ -228,7 +228,11 @@ def main():
 
                 for sensor in tmp_sensor_after:                              # send to log if a new sensor was found
                     if sensor not in tmp_sensor_before.keys():
-                        hostnamesensor = get_sensor_name(sensor, sensor_port)
+                        try:
+                            hostnamesensor = get_sensor_name(sensor, sensor_port)
+                        except UnboundLocalError:
+                            hostnamesensor = "-Err-"
+                            log("main 235 local variable 'sensor_port' referenced before assignment", "error")
                         log("Sensor :" + str(sensor) + " (" + str(hostnamesensor) + ") is online", "info")
 
                     # send the device list to all sensors, store all in sensor_data[k]
