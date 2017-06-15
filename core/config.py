@@ -6,7 +6,7 @@ import core
 import os
 from core.Logger import log
 import ConfigParser
-version = "1.0.7"
+version = "1.0.8"
 
 file_name = 'spot.cfg'
 
@@ -49,9 +49,13 @@ def parse_config():
         core.RGBLED_RED = core.CFG.getfloat('RGBLED', 'RGBLED_RED')
         core.RGBLED_GREEN = core.CFG.getfloat('RGBLED', 'RGBLED_GREEN')
         core.RGBLED_BLUE = core.CFG.getfloat('RGBLED', 'RGBLED_BLUE')
-
     except ConfigParser.NoSectionError:
         core.RGBLED_SUPPORT = False
+
+    try:
+        core.BT_SUPPORT = core.CFG.getboolean('BLUETOOTH', 'BT_SUPPORT')
+    except ConfigParser.NoSectionError:
+        core.BT_SUPPORT = True
 
 def writing_default_config_to_file():
     core.CFG = ConfigParser.RawConfigParser()
@@ -75,6 +79,9 @@ def writing_default_config_to_file():
     core.CFG.set('RGBLED', 'RGBLED_RED', 24)
     core.CFG.set('RGBLED', 'RGBLED_GREEN', 23)
     core.CFG.set('RGBLED', 'RGBLED_BLUE', 25)
+
+    core.CFG.add_section('BLUETOOTH')
+    core.CFG.set('BLUETOOTH', 'BT_SUPPORT', True)
 
     try:
         # Writing the configuration file to 'spot.cfg'

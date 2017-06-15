@@ -298,6 +298,7 @@ def main():
                     log("got a error : " + str(e), "error")
                 else:
                     print("got a error : %s - restarting socket ") % str(e)
+
                 sock.close()
                 sock = getsock()
                 sock.listen(1)
