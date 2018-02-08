@@ -7,7 +7,7 @@ from time import sleep
 from datetime import datetime
 from core.Helper import get_local_ip
 
-version = "1.0.4"
+version = "1.0.5"
 
 # Init the CAD
 def init_cad():
@@ -21,11 +21,11 @@ def init_cad():
 def handle_pin(event):
     event.chip.lcd.clear()
     event.chip.lcd.set_cursor(0, 0)
-    if(str(event.pin_num)=="0"):
+    if(str(event.pin_num) == "0"):
         event.chip.lcd.write("IP Address:")
         event.chip.lcd.set_cursor(0, 1)
         event.chip.lcd.write(str(get_local_ip()))
-    elif(str(event.pin_num)=="1"):
+    elif(str(event.pin_num) == "1"):
         display_banner()
     else:
         event.chip.lcd.write("Pressed button:")
@@ -51,14 +51,20 @@ def display_msg(msg):
     cad.lcd.set_cursor(0, 1)
     cad.lcd.write(str(msg))
     blink_display()
+    if(str(msg) == "ALL OUT"):
+        display_off()
 
 
 def display_banner():
     cad.lcd.clear()
     cad.lcd.set_cursor(0, 0)
     cad.lcd.write("SPOT")
-    cad.lcd.set_cursor(0, 1) # by REDIP
+    cad.lcd.set_cursor(0, 1)
     cad.lcd.write("    by REDIP")
+
+
+def display_off():
+    cad.lcd.backlight_off()
 
 
 def init_support_switches():

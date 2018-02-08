@@ -11,7 +11,7 @@
 import socket
 from core.Logger import log
 from time import sleep
-version = "1.2.1"
+version = "1.2.2"
 
 
 def writeline_dict(mysock, my_dict):

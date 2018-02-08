@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name, display_rgbled
 from core.udpclient import updclientstart
 
-version = "1.5.2"
+version = "1.5.3"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -183,6 +183,7 @@ def discovery_sensors(wait_till_found=True):
             print("KeyboardInterrupt received, stopping work ")
         os._exit(0)
 'Hier weiter machen RGB setzen in main'
+
 
 def main():
     nearby_devices_counter = 0          # how many devices are in the coverage of Spot / in the Homezone
@@ -369,6 +370,7 @@ def main():
                     log("no more devices around", "debug")
                     # no one there. Start process
                     core.SLEEP_TIMER = core.SLEEP_TIMER_OUT
+                    display_msg_on_sensors_display("ALL OUT")
                     display_rgbled_on_sensors('100')
 
                 else:

@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.6.2"
+version = "1.6.3"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
@@ -250,8 +250,12 @@ def main():
                     writeline(connection, "True")
                     line = read_tcp(connection)
                     if core.PIFACECAD_SUPPORT:
-                        log("Displaying Text : " + str(line), "debug")
-                        lcd_display.display_msg(str(line))
+                        if str(line) == "ALL OUT":
+                            log("Display backlight OFF ", "debug")
+                            lcd_display.display_off()
+                        else:
+                            log("Displaying Text : " + str(line), "debug")
+                            lcd_display.display_msg(str(line))
                         writeline(connection, "True")
                     else:
                         log("PIFACECAD_SUPPORT is not Enabled", "debug")
@@ -304,6 +308,7 @@ def main():
                 sock.listen(1)
             if core.RGBLED_SUPPORT:
                 rgb_led.set_color('000')
+
 
 if __name__ == "__main__":
     # Set up and gather command line arguments
