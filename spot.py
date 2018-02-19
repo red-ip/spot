@@ -25,7 +25,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name, display_rgbled
 from core.udpclient import updclientstart
 
-version = "1.5.3"
+version = "1.5.4"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -250,8 +250,10 @@ def main():
 
                     # to speed up detection and to send the msg to the ccu2 a user entered the homezone
                     if nearby_devices_counter == 0 and pre_lookup:
+                        log("Quick Detection mode on, scanning for devices", "debug")
                         for item_dev, itemd in sensor_data[k].items():
                             if itemd['presence'].lower() == 'true':
+                                log("Quick Detection mode found a device", "debug")
                                 pre_lookup = False
                                 send_ok = send_device_status_to_ccu(itemd['ise_id'], 'true')
                                 display_msg_on_sensors_display("Hello " + str(itemd['name']))
@@ -364,20 +366,20 @@ def main():
                 nearby_devices_counter += int(int_presence)
 
             log(str(nearby_devices_counter) + " of " + str(devices_to_check_counter) + " are in the coverage of Spot", "debug")
-            if nearby_devices_counter_last_run != nearby_devices_counter:
-                nearby_devices_counter_last_run = nearby_devices_counter
-                if nearby_devices_counter == 0:
-                    log("no more devices around", "debug")
-                    # no one there. Start process
-                    core.SLEEP_TIMER = core.SLEEP_TIMER_OUT
-                    display_msg_on_sensors_display("ALL OUT")
-                    display_rgbled_on_sensors('100')
+            #if nearby_devices_counter_last_run != nearby_devices_counter:
+            #    nearby_devices_counter_last_run = nearby_devices_counter
+            if nearby_devices_counter == 0:
+                log("no more devices around", "debug")
+                # no one there. Start process
+                core.SLEEP_TIMER = core.SLEEP_TIMER_OUT
+                display_msg_on_sensors_display("ALL OUT")
+                display_rgbled_on_sensors('100')
 
-                else:
-                    # someone is there. Start process
-                    log(str(nearby_devices_counter) + " devices around", "debug")
-                    core.SLEEP_TIMER = core.SLEEP_TIMER_IN
-                    display_rgbled_on_sensors('010')
+            else:
+                # someone is there. Start process
+                log(str(nearby_devices_counter) + " devices around", "debug")
+                core.SLEEP_TIMER = core.SLEEP_TIMER_IN
+                display_rgbled_on_sensors('010')
 
 
             if counter > 15:           # Rediscover after every 15 loops
@@ -389,6 +391,7 @@ def main():
     except KeyboardInterrupt:
         log("Got signal to STOP", "info")
         display_rgbled_on_sensors('000')
+        display_msg_on_sensors_display("ALL OUT")
         if core.PROG_DAEMONIZE:
             startstop(pidfile=core.PDI_FILE, startmsg='stopping daemon', action='stop')
         else:
@@ -477,7 +480,7 @@ if __name__ == "__main__":
         core.SPOT_SENSOR = dict(item.split(":") for item in options.manually.split(","))
         #except error:
         print "------------------- IP manual set to " + options.manually + " -------------------"
-        if len(core.SPOT_SENSOR) < 8:
+        if len(core.SPOT_SENSOR) > 8:
             p.error("Sensor IP and Port (10.1.1.2:10002) Mandatory if you not using Automatic Discovery Mode")
     else:
         core.AUTO_DISCOVERY = True
