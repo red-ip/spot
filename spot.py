@@ -15,6 +15,7 @@ import os
 import socket
 import sys
 import time
+import threading
 from optparse import OptionParser
 
 import core
@@ -25,7 +26,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name, display_rgbled
 from core.udpclient import updclientstart
 
-version = "1.5.4"
+version = "1.6.1"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -36,6 +37,23 @@ core.SLEEP_TIMER_IN = core.SLEEP_TIMER  # must be after import core.config
 
 print("------------------- Spot %s -------------------") % version
 
+
+class myThread (threading.Thread):
+    def __init__(self, threadID, ip_address, ip_port, devices_to_check):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.ip_address = ip_address
+        self.ip_port = ip_port
+        self.devices_to_check = devices_to_check
+        self.sensor_data_return = []
+
+    def run(self):
+        #threadLock.acquire()
+        self.sensor_data_return = check_device_dict_via_sensor(self.ip_address, self.ip_port, self.devices_to_check)
+        #threadLock.release()
+
+    def get_list(self):
+        return self.sensor_data_return
 
 def display_msg_on_sensors_display(MSG_Text):
     # send the MSG to all sensors, store all in sensor_data[k]
@@ -237,31 +255,29 @@ def main():
                         log("Sensor :" + str(sensor) + " (" + str(hostnamesensor) + ") is online", "info")
 
                     # send the device list to all sensors, store all in sensor_data[k]
+
+            threads = []
+            thread_counter = 0
+
             for k, v in core.SPOT_SENSOR.items():
                 # (k)ey = IP-Address of the Sensor
                 # (v)alue = Port of the Sensor
+
                 log("checking if : " + str(k) + " . ready to receive the device list", "debug")
                 if check_sensor(k, v):  # ping the sensor
-                    log(str(k) + " . is ready to receive the device list. Sending list..", "debug")
+                    log(str(k) + " . Sending list..", "debug")
                     cp_device = {}
                     cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
-                    sensor_data[k] = check_device_dict_via_sensor(k, v, cp_device)  # collect dates from all sensors
-                    log(str(k) + " done..", "debug")
+                    thread_counter += 1
+                    thread = myThread(thread_counter, k, v, cp_device)
+                    thread.start()
+                    threads.append(thread)
+                    log(str(k) + " ready to start..", "debug")
 
-                    # to speed up detection and to send the msg to the ccu2 a user entered the homezone
-                    if nearby_devices_counter == 0 and pre_lookup:
-                        log("Quick Detection mode on, scanning for devices", "debug")
-                        for item_dev, itemd in sensor_data[k].items():
-                            if itemd['presence'].lower() == 'true':
-                                log("Quick Detection mode found a device", "debug")
-                                pre_lookup = False
-                                send_ok = send_device_status_to_ccu(itemd['ise_id'], 'true')
-                                display_msg_on_sensors_display("Hello " + str(itemd['name']))
-                                display_rgbled_on_sensors('001')
-                                break
+
 
                     if not core.SENSOR_AVAILABLE:
-                        # eine Liste mit den gefundenenen Sensoren erstellen und ausgeben
+                        # zu beginn, eine Liste mit den gefundenenen Sensoren erstellen und ausgeben
                         for sensor_ip, sensor_port in core.SPOT_SENSOR.items():
                             hostnamesensor = get_sensor_name(sensor_ip, sensor_port)
                             log("Sensor :" + str(sensor_ip) + " (" + str(hostnamesensor) + ") is online", "info")
@@ -271,6 +287,12 @@ def main():
                     log("Sensor ping failed to : " + str(k) + " . Moving on to the next sensor", "debug")
                     log("Sensor : " + str(k) + " . Disconnected", "info")
                     request_discovery = True
+
+            # Wait for all threads to complete
+            for t in threads:
+                t.join()
+                sensor_data[str(t.ip_address)] = t.get_list()
+
             log("Beginning to calculate the presence information from the Sensors", "debug")
             presence_of_devices = {}
             presence_of_devices = accumulate_sensor_data(sensor_data, devices_to_check)
