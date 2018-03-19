@@ -38,7 +38,7 @@ The Protocol:
     After the function is done, the application go back to waiting for command mode
 """
 import core
-version = "1.6.3"
+version = "1.6.4"
 core.LOG_FILE_NAME = "spot_sensor"
 
 import os
