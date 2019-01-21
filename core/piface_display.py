@@ -7,7 +7,8 @@ from time import sleep
 from datetime import datetime
 from core.Helper import get_local_ip
 
-version = "1.0.5"
+version = "1.1.0"
+lastLCDline = ""
 
 # Init the CAD
 def init_cad():
@@ -43,13 +44,17 @@ def blink_display(times=3):
 
 
 def display_msg(msg):
+    global lastLCDline
     cad.lcd.clear()
     cad.lcd.set_cursor(0, 0)
-    current_time = datetime.now().time().strftime('%H:%M:%S')
-    display_text = "Spot!   {0}".format(current_time)
+    current_time = datetime.now().time().strftime('%H:%M')
+
+    display_text = msg + "{0}".format(current_time)
     cad.lcd.write(display_text)
     cad.lcd.set_cursor(0, 1)
-    cad.lcd.write(str(msg))
+    cad.lcd.write(lastLCDline)
+    lastLCDline = display_text
+
     blink_display()
     if(str(msg) == "ALL OUT"):
         display_off()

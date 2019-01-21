@@ -26,7 +26,7 @@ from core.homematic import get_device_to_check, send_device_status_to_ccu
 from core.sensor_com import check_device_dict_via_sensor, check_sensor, display_msg, get_sensor_name, display_rgbled
 from core.udpclient import updclientstart
 
-version = "1.6.1"
+version = "1.7.0"
 core.LOG_FILE_NAME = "spot_check"
 ## initial vari
 core.LOG_FILE_LOCATION = os.path.split(sys.argv[0])[0] + "/log"
@@ -265,14 +265,19 @@ def main():
 
                 log("checking if : " + str(k) + " . ready to receive the device list", "debug")
                 if check_sensor(k, v):  # ping the sensor
-                    log(str(k) + " . Sending list..", "debug")
+                    log(str(k) + ". Sensor is waiting for Data..", "debug")
                     cp_device = {}
                     cp_device = copy.deepcopy(devices_to_check)                     # deepcopy to avoiding references
+                    if (counter % 2) == 0:                                          # just check VIP every second time
+                        for mac_of_device, value_of_device in cp_device.items():
+                            if cp_device[mac_of_device]['device'].lower() == "novip":
+                                del cp_device[mac_of_device]
+
                     thread_counter += 1
                     thread = myThread(thread_counter, k, v, cp_device)
                     thread.start()
                     threads.append(thread)
-                    log(str(k) + " ready to start..", "debug")
+                    log(str(k) + " sending data to Sensor", "debug")
 
 
 
@@ -309,73 +314,77 @@ def main():
             else:
                 # checking if device presence has changed
                 for k, v in devices_to_check.items():   # k = mac-address
-                    if devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] > 0:
-                        # was visible   ist visible     do nothing
-                        devices_to_check[k]['first_not_seen'] = None
-                        devices_to_check[k]['times_not_seen'] = 0
+                    try:
+                        if devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] > 0:
+                            # was visible   ist visible     do nothing
+                            devices_to_check[k]['first_not_seen'] = None
+                            devices_to_check[k]['times_not_seen'] = 0
 
-                        seen_by = ""
-                        for items in devices_to_check[k]['seen_by']:
-                            if devices_to_check[k]['seen_by'][items]:
-                                seen_by = seen_by + str(items) + " "
+                            seen_by = ""
+                            for items in devices_to_check[k]['seen_by']:
+                                if devices_to_check[k]['seen_by'][items]:
+                                    seen_by = seen_by + str(items) + " "
 
-                        log(str(k) + " is still present. Loop : " + str(counter) + " Seen by : " + seen_by, "debug")
+                            log(str(k) + " is still present. Loop : " + str(counter) + " Seen by : " + seen_by, "debug")
 
-                    elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
-                        devices_to_check[k]['times_not_seen'] < core.MAX_TIME_NOT_SEEN:
-                        # was visible   ist not visible < MAX   count not seen + 1, set first time not seen
-                        devices_to_check[k]['times_not_seen'] += 1
-                        if devices_to_check[k]['first_not_seen'] is None:
-                            devices_to_check[k]['first_not_seen'] = time_stamp
-                            log(str(k) + " is first time no seen. Loop : " + str(counter), "debug")
+                        elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
+                            devices_to_check[k]['times_not_seen'] < core.MAX_TIME_NOT_SEEN:
+                            # was visible   ist not visible < MAX   count not seen + 1, set first time not seen
+                            devices_to_check[k]['times_not_seen'] += 1
+                            if devices_to_check[k]['first_not_seen'] is None:
+                                devices_to_check[k]['first_not_seen'] = time_stamp
+                                log(str(k) + " is first time no seen. Loop : " + str(counter), "debug")
 
-                    elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
-                                    devices_to_check[k]['times_not_seen'] >= core.MAX_TIME_NOT_SEEN:
-                        # was visible   ist not visible = MAX!   update ccu2, was visible = False
-                        # send update to ccu2
-                        send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'false')
-                        log("OUT - " + str(devices_to_check[k]['name']) + " since " + \
-                            str(devices_to_check[k]['first_not_seen']) + ".", "info")
-                        log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is last seen at " + \
-                            str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "debug")
+                        elif devices_to_check[k]['presence'].lower() == 'true' and presence_of_devices[k] == 0 and \
+                                        devices_to_check[k]['times_not_seen'] >= core.MAX_TIME_NOT_SEEN:
+                            # was visible   ist not visible = MAX!   update ccu2, was visible = False
+                            # send update to ccu2
+                            send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'false')
+                            log("OUT - " + str(devices_to_check[k]['name']) + " since " + \
+                                str(devices_to_check[k]['first_not_seen']) + ".", "info")
+                            log(str(k) + " - " + str(devices_to_check[k]['name']) + \
+                                " is last seen at " + \
+                                str(devices_to_check[k]['first_not_seen']) + ". going to update the CCU2", "debug")
 
-                        if send_ok:      # successful
-                            log(str(k) + " changes successfully updated to CCU2", "debug")
+                            if send_ok:      # successful
+                                log(str(k) + " changes successfully updated to CCU2", "debug")
+                            else:
+                                log(str(k) + " problem trying to update changes to CCU2", "debug")
+                            devices_to_check[k]['presence'] = 'False'                       # update the dict
+                            display_msg_on_sensors_display("O:" + str(devices_to_check[k]['name']))
+                            time.sleep(1)
+                            # passing to a DB ->
+
+                        elif devices_to_check[k]['presence'].lower() == 'false' and presence_of_devices[k] > 0:
+                            # was not visible   ist visible        update ccu2, was visible = True, reset counter and stamp
+                            # send update to ccu2
+                            send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
+                            seen_by = ""
+                            for items in devices_to_check[k]['seen_by']:
+                                if devices_to_check[k]['seen_by'][items]:
+                                    seen_by = seen_by + str(items) + " "
+
+                            log(" IN - " + str(devices_to_check[k]['name']) + " since " + str(time_stamp) + ". Seen by : " + \
+                                seen_by, "info")
+
+                            log(str(k) + " - " + str(devices_to_check[k]['name']) + \
+                                " is here now. Update is sent to CCU2", "debug")
+                            if send_ok:      # successful
+                                log(str(k) + " changes successfully updated to CCU2", "debug")
+                            else:
+                                log(str(k) + " problem trying to update changes to CCU2", "debug")
+                            devices_to_check[k]['times_not_seen'] = 0                       # reset not seen counter to 0
+                            devices_to_check[k]['first_not_seen'] = None                    # reset first time stamp
+                            devices_to_check[k]['presence'] = 'True'                        # update the dict
+                            display_msg_on_sensors_display("I:" + str(devices_to_check[k]['name']))
+                            display_rgbled_on_sensors('001')
+                            time.sleep(1)
+                            # passing to a DB ->
                         else:
-                            log(str(k) + " problem trying to update changes to CCU2", "debug")
-                        devices_to_check[k]['presence'] = 'False'                       # update the dict
-                        display_msg_on_sensors_display(str(devices_to_check[k]['name']) + " left")
-                        time.sleep(1)
-                        # passing to a DB ->
+                            log(str(k) + " remains unavailable", "debug")
 
-                    elif devices_to_check[k]['presence'].lower() == 'false' and presence_of_devices[k] > 0:
-                        # was not visible   ist visible        update ccu2, was visible = True, reset counter and stamp
-                        # send update to ccu2
-                        send_ok = send_device_status_to_ccu(devices_to_check[k]['ise_id'], 'true')
-                        seen_by = ""
-                        for items in devices_to_check[k]['seen_by']:
-                            if devices_to_check[k]['seen_by'][items]:
-                                seen_by = seen_by + str(items) + " "
-
-                        log(" IN - " + str(devices_to_check[k]['name']) + " since " + str(time_stamp) + ". Seen by : " + \
-                            seen_by, "info")
-
-                        log(str(k) + " - " + str(devices_to_check[k]['name']) + \
-                            " is here now. Update is sent to CCU2", "debug")
-                        if send_ok:      # successful
-                            log(str(k) + " changes successfully updated to CCU2", "debug")
-                        else:
-                            log(str(k) + " problem trying to update changes to CCU2", "debug")
-                        devices_to_check[k]['times_not_seen'] = 0                       # reset not seen counter to 0
-                        devices_to_check[k]['first_not_seen'] = None                    # reset first time stamp
-                        devices_to_check[k]['presence'] = 'True'                        # update the dict
-                        display_msg_on_sensors_display("Hello " + str(devices_to_check[k]['name']))
-                        display_rgbled_on_sensors('001')
-                        time.sleep(1)
-                        # passing to a DB ->
-                    else:
-                        log(str(k) + " remains unavailable", "debug")
+                    except KeyError:
+                        log(str(k) + " skipping this loop because its no VIP ", "debug")
 
                 # if activated, send a alive signal to ccu2. To activate it, u need to create a
                 # system variable ('last_update_') on the ccu2

@@ -46,9 +46,9 @@ Discovery started
 [NEW] Device 41:04:EB:57:28:77 41-04-EB-57-28-77
 [NEW] Device 11:E7:77:74:17:EB 11-E7-77-74-17-EB
 [NEW] Device CC:29:F5:67:B7:EC CC-29-F5-67-B7-EC
-[CHG] Device CC:29:F5:67:B5:EC Name: iPhoneMarius
-[CHG] Device CC:29:F5:67:B5:EC Alias: iPhoneMarius
-[CHG] Device CC:29:F5:67:B5:EC UUIDs:
+[CHG] Device CC:29:F5:57:Bf:2C Name: iPhoneMarius
+[CHG] Device CC:29:F5:57:Bf:2C Alias: iPhoneMarius
+[CHG] Device CC:29:F5:57:Bf:2C UUIDs:
 	00001200-0000-1000-8000-00805f0b34fb
 	0000111f-0000-1000-8000-00805f0b34fb
 	0000112f-0000-1000-8000-00805f0b34fb
@@ -59,19 +59,19 @@ Discovery started
 	00000000-deca-fade-deca-deafdecacafe
 	2d8d2466-e14d-451c-88bc-7301abea291a
 
-- Mein Telefon ist iPhoneMarius, und die MAC-Adresse lautet CC:29:F5:67:B5:EC
+- Mein Telefon ist iPhoneMarius, und die MAC-Adresse lautet CC:29:F5:57:Bf:2C
 - Damit sind wir in der Lage das iPhone jetzt zu koppeln
 
 agent on
-pair CC:29:F5:67:B5:EC		Telefon muss sich in “discovery modus” befinden
+pair CC:29:F5:57:Bf:2C		Telefon muss sich in “discovery modus” befinden
 
-[bluetooth]# pair CC:29:F5:67:B5:EC 
-Attempting to pair with CC:29:F5:67:B5:EC
-[CHG] Device CC:29:F5:67:B5:EC Connected: yes
+[bluetooth]# pair CC:29:F5:57:Bf:2C
+Attempting to pair with CC:29:F5:57:Bf:2C
+[CHG] Device CC:29:F5:57:Bf:2C Connected: yes
 Request confirmation
 [agent] Confirm passkey 476717 (yes/no): yes
-[CHG] Device CC:29:F5:67:B5:EC Modalias: bluetooth:v004Cp6E00d0930
-[CHG] Device CC:29:F5:67:B5:EC UUIDs:
+[CHG] Device CC:29:F5:57:Bf:2C Modalias: bluetooth:v004Cp6E00d0930
+[CHG] Device CC:29:F5:57:Bf:2C UUIDs:
 	00000000-deca-fade-deca-deafdecacafe
 	00001000-0000-1000-8000-00805f0b34fb
 	0000110a-0000-1000-8000-00805f0b34fb
@@ -82,7 +82,7 @@ Request confirmation
 	0000112f-0000-1000-8000-00805f0b34fb
 	00001132-0000-1000-8000-00805f0b34fb
 	00001200-0000-1000-8000-00805f0b34fb
-[CHG] Device CC:29:F5:67:B5:EC Paired: yes
+[CHG] Device CC:29:F5:57:Bf:2C Paired: yes
 Pairing successful
 
 exit
@@ -103,23 +103,23 @@ ACTION=="add", KERNEL=="hci0", RUN+="/usr/bin/hciconfig hci0 up"
 1# HomeMatic Konfiguration
 Erstelle auf der CCU2 für jedes Gerät das Du abfragen willst einer System Variable (Logic value true = is true, false = is false) Englische Schreibweise verwenden
 
-Der Name der Variablen: var_spot_CC:29:F5:67:B5:EC_marius_iPhone
+Der Name der Variablen: var_spot_CC:29:F5:57:Bf:2C_marius_vip
 Die Variable ist wie folgt aufgebaut :
 
 “var_spot_”		= dadurch erkennt Spot die Variable, dies bleibt immer gleich
-“CC:29:F5:67:B5:EC”	= das ist die Bluethooth MAC Adresse des Gerätes das überprüft werden soll
+“CC:29:F5:57:Bf:2C”	= das ist die Bluethooth MAC Adresse des Gerätes das überprüft werden soll
 “_marius"		= Name des Teilnehmers
-“_iPhone”		= Gerätename des Teilnehmers
+“_vip”		    = vip oder novip. bei novip wird bei jeden zweiten Lauf dieses Gerät ausgelassen.
 
 
 3# Erstelle ein Programme auf der CCU2
 
 Beispiel Anwesenheit :
-	System state var_spot_CC:29:F5:57:Bf:1C_marius_iPhone when is true trigger when chenged
+	System state var_spot_CC:29:F5:57:Bf:2C_marius_vip when is true trigger when chenged
 	AND 
 	System state Anwesenheit when nicht anwesend check only
 OR
-	System state var_spot_CC:29:C2:17:A4:A2_paulina_iPhone when is true trigger when chenged
+	System state var_spot_CC:29:C2:17:A4:A4_paulina_vip when is true trigger when chenged
 	AND 
 	System state Anwesenheit when nicht anwesend check only
 
@@ -129,9 +129,9 @@ Activity
 
 
 Beispiel Keine Anwesenheit :
-	System state var_spot_CC:29:F5:57:Bf:1C_marius_iPhone when is false trigger when chenged
+	System state var_spot_CC:29:F5:57:Bf:2C_marius_vip when is false trigger when chenged
 AND
-	System state var_spot_CC:29:C2:17:A4:A2_paulina_iPhone when is false trigger when chenged
+	System state var_spot_CC:29:C2:17:A4:A4_paulina_vip when is false trigger when chenged
 
 Activity 
 	System state Anwesenheit immediately nicht anwesend
