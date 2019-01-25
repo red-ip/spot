@@ -7,7 +7,7 @@ from time import sleep
 from datetime import datetime
 from core.Helper import get_local_ip
 
-version = "1.1.0"
+version = "1.1.1"
 lastLCDline = ""
 
 # Init the CAD
@@ -48,8 +48,8 @@ def display_msg(msg):
     cad.lcd.clear()
     cad.lcd.set_cursor(0, 0)
     current_time = datetime.now().time().strftime('%H:%M')
-
-    display_text = msg + "{0}".format(current_time)
+    display = '{message: <{width}}'.format(message=msg, width=11)
+    display_text = display[0:11] + "{0}".format(current_time)
     cad.lcd.write(display_text)
     cad.lcd.set_cursor(0, 1)
     cad.lcd.write(lastLCDline)

@@ -53,6 +53,7 @@ def get_local_ip(try_with = '8.8.8.8'):
         del s
     return ip
 
+
 def is_number(var_test, return_by_true=True, return_by_false=False):
     try:
         int(var_test)
@@ -90,6 +91,7 @@ def ParseTyps(deviceSerial, description):
 
     return data
 
+
 def pid_file_create():
     #/usr/bin/env python
 
@@ -114,6 +116,7 @@ def pid_file_create():
             log("overwriting PID file not possible maybe: Permission denied: " + str(pidfile), "error")
 
     return pid
+
 
 # region can be removed coz no need for it anymore
 def findProcess(processId):
